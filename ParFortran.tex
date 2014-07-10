@@ -1,0 +1,151 @@
+\documentclass[prodmode,acmtecs]{acmsmall}
+
+% Package to generate and customize Algorithm as per ACM style
+\usepackage[ruled]{algorithm2e}
+\renewcommand{\algorithmcfname}{ALGORITHM}
+\SetAlFnt{\small}
+\SetAlCapFnt{\small}
+\SetAlCapNameFnt{\small}
+\SetAlCapHSkip{0pt}
+\IncMargin{-\parindent}
+
+% Metadata Information
+%\acmVolume{9}
+%\acmNumber{4}
+%\acmArticle{39}
+%\acmYear{2010}
+%\acmMonth{3}
+
+% Document starts
+\begin{document}
+
+% Page heads
+\markboth{C. Oancea and L. Rauchwerger}{A Hybrid Approach to Loop Parallelization}
+
+% Title portion
+\title{A Hybrid Approach to Loop Parallelization}
+\author{Cosmin E. Oancea
+\affil{University of Copenhagen}
+Lawrence Rauchwerger
+\affil{Texas A \& M University}}
+
+
+\begin{abstract}
+
+\end{abstract}
+
+\category{D.1.3}{Concurrent Programming}{Parallel Programming}
+\category{D.3.4}{Processors}{Compiler}
+
+
+\terms{Performance, Design, Algorithms}
+
+\keywords{auto-parallelization, array-reference summaries, conditional induction variables ({\sc civ}).}
+
+\acmformat{Cosmin E. Oancea and Lawrence Rauchwerger, 2014.
+A Lightweight Hybrid Approach to Loop Parallelization.}
+
+
+\begin{bottomstuff}
+Author's addresses: 
+Cosmin E. Oancea, Department of Computer Science,
+University of Copenhagen, cosmin.oancea@diku.dk; 
+Lawrence Rauchwerger, Department of Computer Science and Engineering,
+Texas A \& M University, rwerger@cs.tamu.edu.
+\end{bottomstuff}
+
+\maketitle
+
+
+\section{Introduction}
+
+
+\section{Preliminaries}
+
+\subsection{Motivating Example}
+
+\subsection{Linear-Memory-Access-Descriptors (LMAD) Summaries}
+
+\subsection{Unified-Set-Reference (USR) Summaries}
+
+\subsection{Summary Construction to Program Level}
+
+\subsection{Loop Independence Equations}
+
+
+\section{Basic Translation From Summary To Predicate Language}
+
+\subsection{Extracting Predicates from LMADs}
+
+\subsection{Elementary Logical Inference Rules}
+
+\subsection{Slicing and Common-Path Optimization of Predicates}
+
+
+\section{Predicates for Non-Affine Subscripts}
+    This is described in~\cite{SummaryMonot}.
+
+\subsection{Motivation, Problem Statement and Simple Example}
+
+\subsection{When, Where and How to Exploit Monotonic Summaries}
+
+\subsection{Summaries with Quasi-Linear Subscripts}
+
+\subsection{Summaries with Quadratic Subscripts}
+
+\subsection{Summaries with Indirect-Array Subscripts}
+
+\subsection{Overall Design Strategy}
+
+
+\section{Summarizing Across Conditional Induction Variables}
+
+\section{Related Work}
+
+
+\section{Conclusions}
+
+
+
+% Appendix
+\appendix
+\section*{APPENDIX}
+\setcounter{section}{1}
+In this appendix, we ...
+
+\appendixhead{ZHOU}
+
+% Acknowledgments
+\begin{acks}
+The authors would like to thank ...
+\end{acks}
+
+% Bibliography
+\bibliographystyle{ACM-Reference-Format-Journals}
+\bibliography{ParFortran}
+                             % Sample .bib file with references that match those in
+                             % the 'Specifications Document (V1.5)' as well containing
+                             % 'legacy' bibs and bibs with 'alternate codings'.
+                             % Gerry Murray - March 2012
+
+% History dates
+%\received{February 2007}{March 2009}{June 2009}
+
+% Electronic Appendix
+\elecappendix
+
+\medskip
+
+\section{This is an example of Appendix section head}
+
+Lalala1
+
+
+\section{Appendix section head}
+
+Lalala2
+
+\end{document}
+% End of v2-acmsmall-sample.tex (March 2012) - Gerry Murray, ACM
+
+
