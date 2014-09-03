@@ -1557,19 +1557,19 @@ bounds are derivable from its {\sc veg}. %in its corresponding {\sc veg}.
 
 \section{Experimental Evaluation}
 \label{sec:EmpEval}
-
+    
 \begin{table}[t] 
 \centering
 \scriptsize   
 \begin{tabular}{|c|l|l|c|c|l|} \hline
 \multicolumn{6}{|c|}{Properties of Benchmarks Exhibiting Important Loops That Use {\sc civ}s} \\ \hline
 {\sc bench} & {\sc properties} & {\sc do loop}  & {\sc lsc}\%  & T$_{P/S}^L$(s) & {\sc type} \\ \hline
-{\sc bdna}  &  T$_{P/S}$=.25/.65 s         & {\sc actfor\_500}  & 47.8 & .09/.31 & {\sc st-par}     \\ 
-{\tt P=4}         &  {\sc sc}=87\%,{\sc ov}=0\%  & {\sc actfor\_240}  & 35.6 & .07/.23 & {\sc civ}$_{\tt{}AGG}$    \\ \hline 
-             &  T$_{P/S}$=1.3/3.1 s         & {\sc gmttst\_120}  & 17.4 & .27/.54 & {\sc {\sc fi} {\sc o(1)}}   \\ 
-{\sc nasa7}  &  {\sc sc}=98\%,{\sc ov}=0\%  & {\sc emit\_5}      & 13.6 & .17/.42 & {\sc civ}$_{\tt{}COMP}$   \\  % ,{\sc oi} {\sc o(n)}
-{\tt P=4}        &                              &                      &                & & {\sc oi} {\sc o(n)}       \\
-             &                              & {\sc btrtst\_120}  & 10.1 & .08/.31 & {\sc fi} {\sc o(1)}        \\ \hline
+{\sc bdna}  &  T$_{P/S}$=.19/.65 s         & {\sc actfor\_500}  & 47.8 & .05/.31 & {\sc st-par}     \\ 
+{\tt P=8}         &  {\sc sc}=87\%,{\sc ov}=0\%  & {\sc actfor\_240}  & 35.6 & .04/.23 & {\sc civ}$_{\tt{}AGG}$    \\ \hline 
+             &  T$_{P/S}$=1.14/3.1 s         & {\sc gmttst\_120}  & 17.4 & .27/.54 & {\sc {\sc fi} {\sc o(1)}}   \\ 
+{\sc nasa7}  &  {\sc sc}=98\%,{\sc ov}=0\%  & {\sc emit\_5}      & 13.6 & .09/.42 & {\sc civ}$_{\tt{}COMP}$   \\  % ,{\sc oi} {\sc o(n)}
+{\tt P=8}        &                              &                      &                & & {\sc oi} {\sc o(n)}       \\
+             &                              & {\sc btrtst\_120}  & 10.1 & .05/.31 & {\sc fi} {\sc o(1)}        \\ \hline
 {\sc track}  &  T$_{P/S}$=6.6/16.8 s         & {\sc fptrak\_300}  & 52.8 & 3.6/8.9 & {\sc civ}$_{\tt{}COMP}$   \\ 
 {\tt P=8}        &  {\sc sc}=97\%,{\sc ov}=45\%  & {\sc extend\_400}  & 43.9 & 2.3/7.4 & {\sc civ}$_{\tt{}COMP}$ \\ \hline 
 {\sc tree}   &  T$_{P/S}$=12.8/59 s        & {\sc accel\_10}    & 91.2 & 7.6/54 & {\sc civ}$_{\tt{}AGG}$  \\            %58.6%53.5
@@ -1591,21 +1591,9 @@ fraction of the total sequential runtime and that exhibit {\sc civ}-based access
 %
 Table~\ref{tab:LoopBenchProps} characterizes several representative loops, named in 
 the third column, and their corresponding benchmarks, named in the first column.
-{\tt P=4} or {\tt 8} in the benchmark column shows the number of cores used for 
-parallel execution. 
+The reported parallel runtime were measured on {\tt P=8} cores.
 %
 %The last column shows the number of cores used for parallel execution. 
-Benchmarks {\tt bdna} and {\tt nasa7}
-%, which belong to the {\sc perfect-club} and {\sc spec2000} suites,
-were run on (only) four cores because they exhibit small data sets, i.e., low-granularity 
-loops, that limit the profitability of parallelization. 
-In addition, (i) loop {\tt GMTTST\_do120} 
-%from {\tt nasa7} 
-is parallel but has loop-count three, and (ii) loop {\tt RESTAR\_do15},
-%from {\tt bdna}, 
-which covers $9.3\%$ of the sequential runtime, uses {\sc io} operations,
-and was run sequentially. The other benchmarks use eight cores.
-
 
 The second column shows 
 (i)   the parallel and sequential runtime, T$_{P/S}$, measured in seconds,
@@ -1615,8 +1603,19 @@ The second column shows
         non-negligible overhead is the (pre)computation of {\sc civ} values, 
         denoted {\sc civ}$_{\tt{}COMP}$, and presented in Section~\ref{subsect:CivImplem}.   
 
-The fourth column shows the sequential coverage, {\sc lsc}, of each loop, and the
-fifth column shows each loop's parallel and sequential runtime, T$_{P/S}^L$, in seconds.
+The third column shows the names of the most important loops,
+the fourth shows their sequential coverage, {\sc lsc}, and the
+fifth shows each loop's parallel and sequential runtime, T$_{P/S}^L$, in seconds.
+%
+We note that benchmarks {\tt bdna} and {\tt nasa7} have poor scalability, e.g., very small
+performance gain from four to eight-core execution, because they exhibit
+small (historical) datasets: low-granularity important loops that limits the 
+profitability of parallelization.
+%, which belong to the {\sc perfect-club} and {\sc spec2000} suites,
+In addition, (i) loop {\tt GMTTST\_do120} 
+is parallel but has loop-count three, and (ii) loop {\tt RESTAR\_do15},
+which covers $9.3\%$ of the sequential runtime, uses {\sc io} operations,
+and was run sequentially. 
 
 The sixth column shows {\em how} the loop was classified parallel: {\sc fi} {\sc o(1)}
 means that a predicate of runtime complexity {\sc o(1)} has validated loop's flow
@@ -1634,9 +1633,9 @@ parallelization of a ``regular'' loop.
 \multicolumn{2}{}{} 
 	\multirow{2}{*}[32ex]
 	{      		%\hspace{-6ex}	
-                \includegraphics[width=.35\textwidth]{Figures/EmpRes/BenchParRes} \vspace{2ex}     
+                \includegraphics[width=.35\textwidth]{Figures/EmpRes/BenchParResNew} \vspace{2ex}     
 	} & { \hspace{-55ex}
-                    \includegraphics[width=.35\textwidth]{Figures/EmpRes/LoopParRes} \vspace{2ex}
+                    \includegraphics[width=.35\textwidth]{Figures/EmpRes/LoopParResNew} \vspace{2ex}
 	} \\ 
 	\multirow{2}{*}[32ex]
 	{           
@@ -1675,9 +1674,16 @@ algorithm, i.e., computing the $i^{th}$ random number requires only the value of
 and exhibits the {\sc civ} pattern of Figure~\ref{fig:codeActforCorrec}(a), 
 while (ii) {\tt price\_r} uses a faster, recurrent formula that computes the 
 $i^{th}$ random number based on the previous $(i-1)^{th}$ one. 
+This means that in {\tt price\_r} the {\sc civ} is not used for indexing
+but directly in the computation of Sobol numbers, i.e., a prallel prefix 
+scan with exclusive-or operator {\tt xor}. 
 Parallelization of {\tt price\_r} consists of (pre)computing
 in parallel these {\sc civ}$_\mu$ values, in the manner of 
 Section~\ref{subsect:CivImplem}.  
+%
+Because our implementation does not support {\tt xor},
+we have manually turned the {\tt xor} into addition before 
+compilation and then back to {\tt xor} after compilation. 
 
 %\begin{figure}[t]
 %	\begin{tabular}{l l l} 
@@ -1701,7 +1707,7 @@ Section~\ref{subsect:CivImplem}.
 
 
 
-\vspace{1ex}
+%\vspace{1ex}
 
 
 {\bf Experimental Methodology.} Our source-to-source compiler receives as
@@ -1716,7 +1722,7 @@ a $16$-core {\tt AMD Opteron(TM) 6274} system with $128${\tt GB} memory.
 
 %\enlargethispage{\baselineskip}
 
-\vspace{1ex}
+%\vspace{1ex}
 
 
 {\bf Results} are depicted in Figure~\ref{fig:ParRuntime}. 
@@ -1761,18 +1767,17 @@ To check this prediction we run {\sc track}, the most complex benchmark in our s
 on a bandwidth-friendlier system: an eight dual-core {\tt POWER 5+@1.9GHz} with $32$GB memory. 
 The results, depicted in the bottom-right chart of Figure~\ref{fig:ParRuntime} show 
 significantly-improved scalability up to sixteen cores for the total runtime. 
-The {\sc civ}-computation overheads, also depicted in the chart, scale equally well.  
+The {\sc civ}-computation overheads, also depicted in the chart, scales equally well.  
 %and 
 %the {\sc civ}-computation overhead of {\tt track}.
  
-In summary, the benchmarks tested on four and eight processors show
-an average speedup of $2.5$x and $5.13$x, and similarly 
-the average speedup of loops is $2.86$x and $5.26$x, on four and eight cores, 
-respectively.   The highest observed speedup, corresponding to {\tt price\_i}, 
-is $12.5$x on sixteen cores.
+In summary, on eight processors we report an average benchmark-level
+speedup of $4.33\times$, and an average {\sc civ}-loop speedup of $5.12\times$. 
+The highest observed speedup, corresponding to {\tt price\_i}, is $12.5$x 
+on sixteen cores.
 
 
-\section{Related Work}
+\section{Related Work} 
 \label{sec:RelWork}
 
 Classical loop analysis examines each pair of read/write accesses, % dependence each
@@ -1873,6 +1878,10 @@ More specifically, there are not reported:
         cases when they are used as data, rather than for indexing,
   (v) privatization of stack-like accesses, 
  (vi) runtime and scalability results.
+
+Finally, four-core speedups for the {\sc civ} loops of {\tt bdna} and 
+{\tt track} benchmarks are reported in~\cite{CosPLDI}, but the technique 
+by which these {\sc civ} loops have been analyzed is not explained. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
