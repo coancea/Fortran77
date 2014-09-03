@@ -658,7 +658,7 @@ implementation, and focuses on how to (pre)compute safely and in parallel
 the {\sc civ}$_\mu$ values associated to each iteration.
 
 
-\subsection{Demonstration on Two Code Examples}
+\subsection{Intuition on Two Running Examples}
 \label{Intro:RelAppLim}
 
 Figure~\ref{fig:codeActforCorrec} depicts two loops
@@ -671,8 +671,9 @@ on the evaluation of {\tt i.EQ.1}, either the value
 of {\tt civ@1} for the first iteration, or the value of 
 {\tt civ@4} for all other iterations.
 
-\enlargethispage{\baselineskip}
-
+For simplicity, this section discusses in term of read and write sets 
+of subscripts, but our analysis uses {\sc ro}, {\sc rw}, {\sc wf} sets.
+%
 One difficulty in parallelizing loop {\tt ACTFOR\_do240} is to
 prove that array {\tt X} can be privatized, i.e., that all
 indices of {\tt X} which are read in the second inner loop have been 
@@ -740,10 +741,6 @@ civ@5=\mymath{\gamma}(civ@4,civ@1)
 %   \label{fig:CodeACTFOR}     \label{fig:CodeCORREC} 
 
 
-
-%, where we use the 
-%convention that array indexing starts from {\tt 0} rather than {\tt 1}.
-%
 The written subscripts correspond to the {\sc civ} access {\tt X(civ@3)}, %-based
 and are summarized for an iteration of the first-inner loop as
 interval  {\tt[civ@2,civ@4-1]}, i.e., using the {\sc civ} values at 
@@ -757,10 +754,6 @@ is written and the {\sc civ} subscript is incremented, i.e.,
 which neither increments {\sc civ} nor writes anything under the convention 
 that an empty interval has its lower bound greater than its upper bound,
 i.e., {\tt civ@2=civ@4>civ@4-1}.
-%
-%This holds on the {\tt THEN}
-%which increments the {\sc civ} subscript because {\tt civ@4=civ@3=civ@2+1},
-%and also on the {\tt ELSE} branch under the assumption..
 %
 Since the iteration summary is identical on all paths the underestimate 
 set of written indices for the (first inner) loop is obtained by suitably 
@@ -864,24 +857,31 @@ analysis. With the second code, overestimating the write set
 of the inner loop by assuming that all branches are taken 
 allowed the {\sc civ} subscripts to be aggregated in the 
 interval domain. 
-More importantly, note that the separation of the 
-read and write sets cannot be verified statically, i.e.,
-flow independence requires a runtime condition. 
-It follows that the accurate write-first\footnote{
-For simplicity, the discussion used read/write sets, 
-but our analysis computes read-only, read-write and write-first sets.
-}
-({\sc wf}) summary at the (outer) iteration level is the 
-set-difference between the terms corresponding to the inner-loop 
-{\sc civ}-aggregated subscripts and the affine (read) subscript {\tt i},
-respectively.  While the accurate {\sc wf} summary cannot be aggregated 
-as an interval across the outer loop, its overestimate,
-which includes only the {\sc civ} term, can and is sufficient
-for testing loop independence. Furthermore, if an affine 
-(or different-{\sc civ})
-write access is added to the code, the {\sc wf} overestimate
-is still computable by separately aggregating the two
-terms and uniting the results.%taking the union of the results.
+More importantly, the separation of the read and write sets cannot 
+be verified statically, i.e., it requires a runtime condition. 
+%
+It follows that the accurate write-first summary at the 
+outer-loop level cannot be statically simplified to an interval,
+but its overestimate, consisting of only the {\sc civ} term, 
+can and is sufficient for proving parallelization.
+%It follows that the accurate write-first
+%\footnote{
+%For simplicity, the discussion used read/write sets, 
+%but our analysis computes read-only, read-write and write-first sets.
+%}
+%({\sc wf}) summary at the (outer) iteration level is the 
+%set-difference between the terms corresponding to the inner-loop 
+%{\sc civ}-aggregated subscripts and the affine (read) subscript {\tt i},
+%respectively.  
+%While the accurate {\sc wf} summary cannot be aggregated 
+%as an interval across the outer loop, its overestimate,
+%which consists of only the {\sc civ} term, can and is sufficient
+%for testing loop independence. 
+
+Finally, even if an affine (or different-{\sc civ})
+{\em write access} is added to the code, the {\sc wf} overestimate
+is still computable by separately aggregating each
+term and uniting the results. %taking the union of the results.
 
 \subsection{Notations and Problem Statement}
 \label{subsec:ProblemHL}
