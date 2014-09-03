@@ -151,13 +151,15 @@ array-reference summaries, conditional induction variables}
 Array-subscript analysis, e.g., array-dependence analysis~\cite{BanerjeeIneqTest,FeautrierDataflow,Pugh92theomega},
 typically requires that subscript expressions are affine formulas
 in the indices of the enclosing loop nest.   A known problem in 
-the area of automatic loop parallelization, which is examined in this paper, 
-is that a significant number of (important) loops exhibit subscripts 
+the area of automatic loop parallelization is that a significant 
+number of (important) loops exhibit subscripts 
 that use induction variables that cannot be expressed by such closed-form 
 formulas, because they are incremented differently, or not at all, on 
 different control-flow paths of the loop.   We call such variables
 {\em conditional induction variables} or {\sc civ} for short.
-
+This paper examines parallelization of loops that exhibit 
+{\sc civ} variables, which are either used for indexing or 
+directly in the computation of the result.
 
 \begin{figure}
 \begin{minipage}{0.58\columnwidth}
@@ -245,15 +247,15 @@ did not previously handle {\sc civ} subscripts.
 %
 {\em This paper} presents an extension to interprocedural 
 data-flow analysis that allows both affine and {\sc civ}-based subscripts 
-to be effectively summarized at program level into one {\em common representation},
-based on {\sc lmad}~\cite{LMAD} -- a multi-dimensional strided interval.
+to be effectively summarized at program level into one {\em common representation} that builds on multi-dimensional strided intervals. 
+% based on {\sc lmad}~\cite{LMAD}
 
 The gist of our technique is to aggregate symbolically the {\sc civ} 
 references on every control-flow path of the analyzed loop, in terms
 of the {\sc civ} values at the entry and end of each iteration or loop.
 The analysis succeeds (i) if the symbolic-summary results are identical 
 on all paths and (ii) if they can be aggregated across iterations %consecutive
-in the {\sc lmad} domain. %interval domain. %as an interval.
+in the interval domain. %interval domain. %as an interval.
 %within our representation. % (multi-dimensional)   
 
 For the rightmost loop of Figure~\ref{fig:introEg} we denote by 
@@ -321,9 +323,9 @@ that no distinct iterations write a common element of {\tt a}.
             with important {\sc civ}-subscripted loops, which
             shows application level speedups as high as 
             $7.1\times$ and on average $5.1\times$ on eight cores.
-            This includes all runtime overheads, 
-            e.g., {\sc civ}-values computation, which are either 
-            negligible or scale well with the degree of parallelism.
+%            This includes all runtime overheads, 
+%            e.g., {\sc civ}-values computation, which are either 
+%            negligible or scale well with the degree of parallelism.
 
 \end  {itemize}
 
@@ -333,9 +335,9 @@ Finally, our technique is well integrated % fully implemented and
 in a {\tt Fortran77} compiler that uses {\em hybrid analysis}, 
 which verifies dataset-sensitive invariants % (statically-unverifiable)  
 at runtime by evaluating a cascade of sufficient-condition 
-predicates\footnote{The cascade of predicates is (statically) 
-factorized from the summary equation that models the desired invariant.} 
-of increasing complexity, until one succeeds. 
+predicates of increasing complexity, until one succeeds. 
+(The cascade of predicates is statically synthesized from the summary 
+equation that models the desired invariant.)
 %
 We note that hybrid analysis does not require modifications
 but directly benefits from our technique: 
@@ -371,265 +373,28 @@ e.g., in the context of array {\sc ssa}.
 
 
 
-\section{Intuition \& Background}
-\label{sec:Prelim}
-
-The introductory example showed a relatively straightforward
-analysis that inferred an {\em accurate} summary for a loop 
-exhibiting {\em only} {\sc civ}-based subscripts.   
-%
-In practice however, important loops use {\em both} %(benchmark) 
-affine and {\sc civ}-based subscripts on the same array, 
-hence terms of both kinds may appear in the set-expression 
-formula of the accurate summary.
-%
-To allow (separate) aggregation of the two kinds of subscripts,
-analysis computes {\em under/over-estimates}, which are still
-accurate enough to verify the desired invariant.
-%In these cases extending analysis to cover {\em under/over-estimates}
-%allows separate aggregation of the two kinds of subscripts,
-%while still verifying the desired invariant. 
-%Furthermore, if the over and under-estimate are identical,
-%the summary is accurate, and underestimates may be used to 
-%simplify other exact summaries, e.g., the write-first summary
-%may be used to filter out terms of the read-write summary. 
-%
-Section~\ref{Intro:RelAppLim} demonstrates this approach 
-on two \textsc{Perfect-Club} loops.
-
-Our analysis of {\sc civ} subscripts builds on four main techniques 
-reported in the literature that we have implemented in our compiler 
-framework, but to which we do not claim any contributions.
-Section~\ref{subsec:Background} introduces them for completeness.
-
-\subsection{Demonstration on Two Code Examples}
-\label{Intro:RelAppLim}
-
-Figure~\ref{fig:codeActforCorrec} depicts two loops
-using both {\sc civ} and affine subscripts, where the {\tt civ} variable 
-is written in (gated) single-static-assignment ({\sc ssa}) notation~\cite{GatedSSA}.
-%
-For example, the statement {\tt civ@2=$\gamma$(i.EQ.1,civ@1,civ@4)}
-has the semantics that the fresh variable {\tt civ@2} takes, depending 
-on the evaluation of {\tt i.EQ.1}, either the value 
-of {\tt civ@1} for the first iteration, or the value of 
-{\tt civ@4} for all other iterations.
+%\section{Intuition \& Background}
+\section{Preliminary Concepts}
+\label{subsec:Background}
 
 \enlargethispage{\baselineskip}
 
-One difficulty in parallelizing loop {\tt ACTFOR\_do240} is to
-prove that array {\tt X} can be privatized, i.e., that all
-indices of {\tt X} which are read in the second inner loop have been 
-written in the first inner loop by the same iteration of the outer loop.
-The plan is to {\em summarize} the read and written indices at the level of
-the first and second inner loops, respectively, and to prove that an
-overestimate of the read set  is included in an underestimate 
-of the write set (of indices) of the same outer-loop iteration {\tt i},
-i.e., $\lceil R_i\rceil \subseteq \lfloor W_i\rfloor$.
+Our analysis of {\sc civ} subscripts builds on four main techniques 
+reported in the literature, which we have implemented 
+in our compiler, but to which this paper does not claim any contributions:
+%Section~\ref{subsec:Background} introduces them for completeness.
 %
-The summarization analysis is similar to the one used in the introductory 
-example, except that here we use the convention % and in the rest of the paper  
-that array indices start from {\tt 0} rather than {\tt 1}.
-The read subscripts correspond to the affine access {\tt X(j)}, where
-the loop index {\tt j} ranges in {\tt 1..civ@5},
-hence $\lceil R_i\rceil = ${\tt[0,civ@5-1]}.
-
-\begin{figure}
-\begin{minipage}{0.45\columnwidth}
-\begin{colorcode}
-DO i = 2, N, 1
- civ@1 = 0
- DO j = 1, i-1, 1
-  civ@2=\mymath{\gamma}(civ@1,civ@4)
-  IF IA(j) .NE. 0 THEN
-   civ@3 = 1 + civ@2
-   {\bf{}X}(civ@3) = j
-  ENDIF
-  civ@4=\mymath{\gamma}(civ@3,civ@2)
- ENDDO
- civ@5=\mymath{\gamma}(civ@4,civ@1)
- IF civ@5 .NE. 0 THEN
-  DO j = 1, civ@5
-   sum = sum+Z( {\bf{}X}(j) )
-ENDDO ENDIF ENDDO
-\end{colorcode}
-\includegraphics[width=1.1\textwidth]{Figures/ActforRWsets} 
-\end{minipage}
-\begin{minipage}{0.48\columnwidth}
-\begin{colorcode}
-civ@1 = Q
-DO i = M, N, 1
- civ@2=\mymath{\gamma}(civ@1,civ@4)
- .. = {\bf X}(i) ..
- IF C(i) .GT. 0 THEN
-  DO j = 1, C(i), 1
-   IF(..){\bf{}X}(j+civ@2       )=..
-   IF(..){\bf{}X}(j+civ@2+  C(i))=..
-   IF(..){\bf{}X}(j+civ@2+2*C(i))=..
-  ENDDO
-  civ@3 = 3 * C(i) + civ@2
- ENDIF
- civ@4=\mymath{\gamma}(civ@3,civ@2)
-ENDDO
-civ@5=\mymath{\gamma}(civ@4,civ@1)  
-\end{colorcode}
-\hspace{2ex}\includegraphics[width=1\textwidth]{Figures/CorrecRWsets} 
-\end{minipage}
-\hrule
-\caption{(a) {\tt ACTFOR\_do240} and (b) {\tt CORREC\_do401} simplified loops 
-            from {\sc bdna} bench, {\sc Perfect-Club} suite.}
-\label{fig:codeActforCorrec}
-%\vspace{-1.5ex}
-\end{figure}
-%   \label{fig:CodeACTFOR}     \label{fig:CodeCORREC} 
-
-
-
-%, where we use the 
-%convention that array indexing starts from {\tt 0} rather than {\tt 1}.
-%
-The written subscripts correspond to the {\sc civ} access {\tt X(civ@3)}, %-based
-and are summarized for an iteration of the first-inner loop as
-interval  {\tt[civ@2,civ@4-1]}, i.e., using the {\sc civ} values at 
-the beginning and end of an iteration\footnote{Formula also holds 
-for the {\tt ELSE} branch of {\tt IF(IA(j).NE.0)} under the convention 
-that {\tt lb $>$ ub} $\Rightarrow$ {\tt [lb, ub]}$\ \equiv \ \emptyset$.}.
-%
-Since the iteration summary is identical on all paths,
-the underestimate set of written indices for the (first inner) loop 
-is obtained by suitably replacing {\tt civ@2} and {\tt civ@4} with 
-the lower and upper bounds of their ranges, i.e., {\tt civ@1} and 
-{\tt civ@5}, which results in $\lfloor W_i\rfloor={\tt [0,civ@5-1]}$.
-(This is similar to aggregating across a loop whose index ranges 
-    from {\tt{}civ@1=0} to {\tt{}civ@5-1}, because the {\tt civ} 
-    values are monotonic with step at most {\tt 1}.)
-
-Finally, the read and write over and under-estimates are identical 
-for any outermost iteration {\tt i}, hence the desired invariant 
-$\lceil R_i\rceil \subseteq \lfloor W_i\rfloor$ holds, and array {\tt X} 
-can be safely privatized. 
-%
-Furthermore, since an outer iteration uses the values of {\tt X} that 
-have been produced in the same iteration, range analysis determines that 
-the value {\tt X(j) $\in$ [1,i-1]}, because the update 
-{\tt X(civ@3)=j} occurs in the first inner loop of index {\tt j $\in$ [1,i-1]}. 
-%
-This information allows to similarly prove privatization 
-of {\tt Z}, where the writes to {\tt Z} are not shown.
-%
-It follows that outermost-loop parallelization is safe because 
-all carried dependencies on {\tt X} (and {\tt Z}) have been eliminated.
-
-\vspace{1ex}
-Parallelizing loop {\tt CORREC\_do401} in Figure~\ref{fig:codeActforCorrec}(b) 
-requires more work: one needs to prove that the outer-loop's read and write 
-sets of {\tt X} do not overlap, and also that the write sets of  
-different iterations do not overlap, i.e., flow and output independence. 
-Array {\tt X} is read on index {\tt i}, which ranges from {\tt M} to {\tt N},
-hence the read(-only) overestimate across the loop is 
-{\tt$\lceil R \rceil =\cup_{i=M}^{N}(i-1)=$[M-1,N-1]}.
-%since the loop bounds are {\tt M} and {\tt N}.
-
-
-Computation of the write-set {\em overestimate} across the inner loop 
-(i)  conservatively assumes that the {\tt if} branches are always taken, and
-(ii) summarizes the three affine loop updates 
-to interval {\tt[civ@2,civ@2+3*C(i)-1]},
-e.g., {\tt X(j+civ@2)} generates {\tt[civ@2,civ@2+C(i)-1]}, since  
-{\tt j$\in$\{1..C(i)\}}.
-
-Similar to the introductory example, outer-loop aggregation
-analyzes each path of an iteration:
-On the path on which {\tt C(i).GT.0}, we have %that 
-{\tt civ@4$=$civ@3$=$civ@2+3*C(i)}, and the path summary is
-rewritten as {\tt [civ@2,civ@4-1]}. The other path neither 
-updates {\tt X} nor increments {\tt civ}, hence it accepts the
-same summary {\tt[civ@2,civ@4-1]$=\emptyset$}.
-%, since the lower bound is greater than the upper bound.
-
-Since {\tt civ} is updated only when {\tt C(i)} is positive,
-its values are monotonically increasing within the loop with
-the lower and upper bounds being {\tt civ@1=Q} and {\tt civ@5}. 
-It follows that the write-set overestimate of the outer loop is 
-interval $\lceil W \rceil = \lceil \cup_{i=M}^{N}W_i\rceil =${\tt[Q,civ@5-1]}.
-Flow independence requires   
-$\lceil W\rceil\cap\lceil R \rceil \equiv {\tt [M-1,N-1]}\cap{\tt{}[Q,civ@5-1]}=\emptyset$,
-and a sufficient condition for this equation to hold is (easily) extracted:
-${\tt Q} \ge {\tt N}~\vee~{\tt M} > {\tt{}civ@5}$.
-%
-Finally, output independence is proven statically, similarly to the 
-{\sc civ} loop of Figure~\ref{fig:introEg}.
-%statically in a fashion similar 
-%to the one shown for the {\sc civ} loop in Figure~\ref{fig:introEg}.
-%in a similar fashion, i.e., 
-%it is modeled via a set equation whose terms are computed as before.
-
-\vspace{1ex}
-We conclude this section with {\em two high-level observations}: %  
-{\em First}, our analysis summarizes {\sc civ} and affine subscripts
-much in the same way, and enables a dependence test which is agnostic
-to the kind of subscripts that were used.
-%
-%is driven by verifying the algebraic 
-%invariants that allow the {\sc civ} subscripts to be summarized 
-%via the same symbolic set on all control-flow paths:
-%In both examples (i) {\sc civ} (and affine) subscripts are 
-%summarized much in the same way, and (ii) the dependence %/privatization 
-%test is agnostic to the kind of subscripts that were used.
-%operate uniformly on summaries
-%obtained from regular and {\sc civ} accesses.
-% 
-%the resulted summaries
-%and succeed without any other modifications or pattern-matching support. 
-%
-These properties do not seem to hold for related solutions: For example, 
-a technique~\cite{CohenBeyondMon} that disambiguates pairs of accesses 
-of shape {\tt \{X(civ),X(civ+CT)\}} may prove the output 
-independence of {\tt CORREC\_do401}, but will not prove the flow-independence 
-of either loop.
-Similarly, pattern-matching the consecutively-written single-index-array
-access~\cite{PaduaStackArr,VEG} solves loop  {\tt ACTFOR\_do240} but not
-{\tt CORREC\_do401}.
-
-
-{\em Second}, summary approximation has been key to successful
-analysis. With the second code, overestimating the write set 
-of the inner loop by assuming that all branches are taken 
-allowed the {\sc civ} subscripts to be aggregated in the 
-interval domain. 
-More importantly, note that the separation of the 
-read and write sets cannot be verified statically, i.e.,
-flow independence requires a runtime condition. 
-It follows that the accurate write-first\footnote{
-For simplicity, the discussion used read/write sets, 
-but our analysis computes read-only, read-write and write-first sets.
-}
-({\sc wf}) summary at the (outer) iteration level is the 
-set-difference between the terms corresponding to the inner-loop 
-{\sc civ}-aggregated subscripts and the affine (read) subscript {\tt i},
-respectively.  While the accurate {\sc wf} summary cannot be aggregated 
-as an interval across the outer loop, its overestimate,
-which includes only the {\sc civ} term, can and is sufficient
-for testing loop independence. Furthermore, if an affine
-write access is added to the code, the {\sc wf} overestimate
-is still computable by separately aggregating the two
-terms and taking the union of the results.
-
-
-\subsection{Preliminary Concepts}
-\label{subsec:Background}
-
-Our analysis builds on the following compiler infrastructure:
-A baseline analysis summarizes array indices into read-only~{\sc ro}, 
+%Our analysis builds on the following compiler infrastructure:
+First, a baseline analysis summarizes array indices into read-only~{\sc ro}, 
 read-write~{\sc rw} and write-first~{\sc wf} abstract sets, using a 
-representation named unified set reference ({\sc usr}), which is shown 
-in Figure~\ref{fig:USRgrammar}.
+representation named unified set reference ({\sc usr}).
+%, which is shown in Figure~\ref{fig:USRgrammar}.
 %
-Loop independence is then modeled as an equation in the 
+Second, loop independence is then modeled as an equation in the 
 {\sc usr} domain. 
 %
-Whenever this equation cannot be satisfied statically, a predicate 
-is extracted from it, and its evaluation verifies independence 
+Third, whenever this equation cannot be satisfied statically, a 
+predicate is extracted from it, and its evaluation verifies independence 
 at runtime. 
 %
 Finally, the value evolution graph ({\sc veg}) is used to model the 
@@ -638,7 +403,9 @@ flow of {\sc civ} values in a loop, and to query scalars' ranges.
 %, whose
 %grammar is shown in Figure~\ref{fig:USRgrammar}
 
-\begin{figure}[hbt]
+\vspace{1ex}
+%\begin{figure}[hbt]\vspace{-1ex}
+\hspace{-4ex}
 \begin{tabular}{lclr}
 $USR$ & ::= &  $LMAD$                 & ($n$-dim strided intervals)\\
       & {\tt~~}| & $USR \ \cup \ USR$ & (set union)\\
@@ -648,18 +415,18 @@ $USR$ & ::= &  $LMAD$                 & ($n$-dim strided intervals)\\
       & {\tt~~}| & $_l\cup_{i=1}^{N} \ USR$ & (full recurrence)\\
       & {\tt~~}| & $_l\cup_{k=1}^{i-1} \ USR$ & (partial recurrence)\\
       & {\tt~~}| & $CallSite \ \bowtie \ USR$ & (callsite translation)
-\end{tabular}\vspace{-2ex}
-\caption{Unified Set Reference (USR) Grammar.}
-\label{fig:USRgrammar}
-\end{figure}
+\end{tabular}%\vspace{-2ex}
+%\caption{Unified Set Reference (USR) Grammar.}
+%\label{fig:USRgrammar}
+%\end{figure}
+\vspace{1ex}
 
 {\bf USR Construction}~\cite{HybAn}.
 %
-Summaries use the representation shown in Figure~\ref{fig:USRgrammar},
+Summaries use the representation shown above %in Figure~\ref{fig:USRgrammar},
 and can be seen as a {\sc dag} in which leaves correspond,
 for simplicity, to strided (multi-dimensional) intervals, 
-named {\sc lmad} (the implementation uses linear-memory-access 
-descriptors~\cite{LMAD}).
+named linear memory access descriptors~\cite{LMAD} ({\sc lmad}) in the literature.
 {\sc usr}'s internal nodes represent operations whose results are not
 accurately representable in the {\sc lmad} domain: (i) irreducible set
 operations, such as union, intersection, subtraction ($\cup$, $\cap$, $-$), 
@@ -671,8 +438,8 @@ index {\tt i=1,N}.
 %
 We note that while {\sc usr}s are complex and accurate,
 one can always under/over-estimate an {\sc usr} in the 
-simpler {\sc lmad}-representation domain, albeit this may 
-prove very conservative, i.e., $\emptyset$, $[0,\infty]$. 
+simpler strided-interval domain, albeit this may 
+prove very conservative, i.e., $\emptyset$, or $[0,\infty]$. 
 %The latter two cases are depicted in 
 %Figures~\ref{fig:IndEq}~and~\ref{fig:LoopAggreg}.
 
@@ -765,23 +532,28 @@ writes to non-private storage (static last value).
 \vspace{1ex}
 
 {\bf Value-Evolution Graph}~\cite{VEG} ({\sc veg}) is a {\sc dag}  %~\cite{VEG}
-that represents the flow of values between gated-{\sc ssa} names 
+that represents the flow of values between gated-{\sc ssa}~\cite{GatedSSA} names 
 of a scalar variable.  
 %
-{\sc veg}s are constructed on demand at loop and subroutine levels: 
-e.g., Figures~\ref{fig:VegACTFOR}~and~\ref{fig:VegCORREC} depict the 
-{\sc veg}s for the loops in Figure~\ref{fig:codeActforCorrec}.
+{\sc veg}s are constructed on demand at loop and subroutine levels.
 %
-The node merging cross-iteration values  is named 
+The entry node, e.g., merging cross-iteration values,  is named 
 the $\mu$ node and is drawn via a double circle. The recurrence is 
 depicted via a dotted line, named the {\em back edge}, and the
 back node is drawn in a hexagon.
-
-
-Regular nodes, drawn in circles, correspond to reduction-like statements,
-e.g., {\tt civ@3 = civ@2 + 1} is summarized via the edge 
-of evolution $1$ between {\tt civ@2} and {\tt civ@3} in Figure~\ref{fig:VegACTFOR}.
 %
+Regular nodes, drawn in circles, correspond to reduction-like statements.
+For example Figures~\ref{fig:VegACTFOR}~and~\ref{fig:VegCORREC} 
+depict the {\sc veg}s for the running-example loops in 
+Figure~\ref{fig:codeActforCorrec}, which will be discussed later. 
+Even without looking at the code, one can tell that both loops
+have a variable named {\tt civ} that is incremented on some loop
+paths with exactly {\tt 1} and {\tt 3*C(i)}, respectivelly, 
+and is not updated on other paths. 
+%e.g., {\tt civ@3 = civ@2 + 1} is summarized via the edge 
+%of evolution $1$ between {\tt civ@2} and {\tt civ@3} in Figure~\ref{fig:VegACTFOR}.
+%
+
 Note that branch conditions are not explicit in the {\sc veg}, 
 but they are easily found from the gated-{\sc ssa} definition 
 of $\gamma$-merged {\sc civ}s. % node ($\gamma$) . 
@@ -815,6 +587,21 @@ that (pre)computes the {\sc civ} values.
 \section{Summarizing Monotonic CIVs}
 \label{sec:MonotonicCiv}
 
+%The introductory example showed a relatively straightforward
+%analysis that inferred an {\em accurate} summary for a loop 
+%exhibiting {\em only} {\sc civ}-based subscripts.   
+The introductory example showed a simple loop exhibiting 
+{\em only} (one) {\sc civ}-based subscripts that could be
+{\em accurately} summarized.
+%
+In practice however, important loops use {\em both} %(benchmark) 
+affine and {\sc civ}-based subscripts on the same array, hence 
+terms of both kinds may appear in the set expression %formula 
+of the accurate summary, which cannot be simplified
+to an interval.
+%and an exact interval-based
+%summary may not even exist, regardless.
+
 Our analysis is implemented as an extension of baseline 
 summarization for the special cases of loop and iteration 
 aggregation (and callsite translation), because at these 
@@ -827,12 +614,28 @@ encoded in {\sc usr}'s gates, with the control flow of the {\sc veg}.
 The key idea here is to conservatively project the summary terms 
 on the {\sc veg} and to merge across all {\sc veg} paths.
 It follows that our analysis computes under and overestimate
-summaries, which also allows separate aggregation of the affine 
-and {\sc civ}-based terms, but accuracy is recovered whenever
-the under and overestimate are identical.
- 
+summaries, but accuracy is recovered whenever the under and 
+overestimate are identical.
+%which also allows separate aggregation of the affine 
+%and {\sc civ}-based terms (of different {\sc civ} variables). 
+%
+%
+Over/under-estimation also allows (separate) aggregation of the 
+affine and {\sc civ}-based subscripts, which are typically
+accurate enough to verify the desired invariant.
+%In these cases extending analysis to cover {\em under/over-estimates}
+%allows separate aggregation of the two kinds of subscripts,
+%while still verifying the desired invariant. 
+%Furthermore, if the over and under-estimate are identical,
+%the summary is accurate, and underestimates may be used to 
+%simplify other exact summaries, e.g., the write-first summary
+%may be used to filter out terms of the read-write summary. 
+%
 
 Discussion is organized as follows:
+Section~\ref{Intro:RelAppLim} intuitively demonstrates our approach 
+on two running-example loops. %from the \textsc{Perfect-Club} suite.
+%
 {\em Section~\ref{subsec:ProblemHL}} establishes a uniform notation and
 states the problem at a high level.
 %
@@ -854,6 +657,231 @@ Finally, {\em Section~\ref{subsect:CivImplem}} details on the overall
 implementation, and focuses on how to (pre)compute safely and in parallel 
 the {\sc civ}$_\mu$ values associated to each iteration.
 
+
+\subsection{Demonstration on Two Code Examples}
+\label{Intro:RelAppLim}
+
+Figure~\ref{fig:codeActforCorrec} depicts two loops
+using both {\sc civ} and affine subscripts, where the {\tt civ} variable 
+is written in (gated) single-static-assignment ({\sc ssa}) notation~\cite{GatedSSA}.
+%
+For example, the statement {\tt civ@2=$\gamma$(i.EQ.1,civ@1,civ@4)}
+has the semantics that the fresh variable {\tt civ@2} takes, depending 
+on the evaluation of {\tt i.EQ.1}, either the value 
+of {\tt civ@1} for the first iteration, or the value of 
+{\tt civ@4} for all other iterations.
+
+\enlargethispage{\baselineskip}
+
+One difficulty in parallelizing loop {\tt ACTFOR\_do240} is to
+prove that array {\tt X} can be privatized, i.e., that all
+indices of {\tt X} which are read in the second inner loop have been 
+written in the first inner loop by the same iteration of the outer loop.
+The plan is to {\em summarize} the read and written indices at the level of
+the first and second inner loops, respectively, and to prove that an
+overestimate of the read set  is included in an underestimate 
+of the write set (of indices) of the same outer-loop iteration {\tt i},
+i.e., $\lceil R_i\rceil \subseteq \lfloor W_i\rfloor$.
+%
+The summarization analysis is similar to the one used in the introductory 
+example, except that here we use the convention % and in the rest of the paper  
+that array indices start from {\tt 0} rather than {\tt 1}.
+The read subscripts correspond to the affine access {\tt X(j)}, where
+the loop index {\tt j} ranges in {\tt 1..civ@5},
+hence $\lceil R_i\rceil = ${\tt[0,civ@5-1]}.
+
+\begin{figure}
+\begin{minipage}{0.45\columnwidth}
+\begin{colorcode}
+DO i = 2, N, 1
+ civ@1 = 0
+ DO j = 1, i-1, 1
+  civ@2=\mymath{\gamma}(civ@1,civ@4)
+  IF IA(j) .NE. 0 THEN
+   civ@3 = 1 + civ@2
+   {\bf{}X}(civ@3) = j
+  ENDIF
+  civ@4=\mymath{\gamma}(civ@3,civ@2)
+ ENDDO
+ civ@5=\mymath{\gamma}(civ@4,civ@1)
+ IF civ@5 .NE. 0 THEN
+  DO j = 1, civ@5
+   sum = sum+Z( {\bf{}X}(j) )
+ENDDO ENDIF ENDDO
+\end{colorcode}
+\includegraphics[width=1.1\textwidth]{Figures/ActforRWsets} 
+\end{minipage}
+\begin{minipage}{0.48\columnwidth}
+\begin{colorcode}
+civ@1 = Q
+DO i = M, N, 1
+ civ@2=\mymath{\gamma}(civ@1,civ@4)
+ .. = {\bf X}(i) ..
+ IF C(i) .GT. 0 THEN
+  DO j = 1, C(i), 1
+   IF(..){\bf{}X}(j+civ@2       )=..
+   IF(..){\bf{}X}(j+civ@2+  C(i))=..
+   IF(..){\bf{}X}(j+civ@2+2*C(i))=..
+  ENDDO
+  civ@3 = 3 * C(i) + civ@2
+ ENDIF
+ civ@4=\mymath{\gamma}(civ@3,civ@2)
+ENDDO
+civ@5=\mymath{\gamma}(civ@4,civ@1)  
+\end{colorcode}
+\hspace{2ex}\includegraphics[width=1\textwidth]{Figures/CorrecRWsets} 
+\end{minipage}
+\hrule
+\caption{(a) {\tt ACTFOR\_do240} and (b) {\tt CORREC\_do401} simplified loops 
+            from {\sc bdna} bench, {\sc Perfect-Club} suite.}
+\label{fig:codeActforCorrec}
+%\vspace{-1.5ex}
+\end{figure}
+%   \label{fig:CodeACTFOR}     \label{fig:CodeCORREC} 
+
+
+
+%, where we use the 
+%convention that array indexing starts from {\tt 0} rather than {\tt 1}.
+%
+The written subscripts correspond to the {\sc civ} access {\tt X(civ@3)}, %-based
+and are summarized for an iteration of the first-inner loop as
+interval  {\tt[civ@2,civ@4-1]}, i.e., using the {\sc civ} values at 
+the beginning and end of an iteration.
+%\footnote{Formula also holds 
+%for the {\tt ELSE} branch of {\tt IF(IA(j).NE.0)} under the convention 
+%that {\tt lb $>$ ub} $\Rightarrow$ {\tt [lb, ub]}$\ \equiv \ \emptyset$.}:
+This is satisfied on the {\tt THEN} branch because element {\tt civ@3-1}
+is written and the {\sc civ} subscript is incremented, i.e., 
+{\tt civ@4=civ@3=civ@2+1}. It also holds on the {\tt ELSE} branch
+which neither increments {\sc civ} nor writes anything under the convention 
+that an empty interval has its lower bound greater than its upper bound,
+i.e., {\tt civ@2=civ@4>civ@4-1}.
+%
+%This holds on the {\tt THEN}
+%which increments the {\sc civ} subscript because {\tt civ@4=civ@3=civ@2+1},
+%and also on the {\tt ELSE} branch under the assumption..
+%
+Since the iteration summary is identical on all paths the underestimate 
+set of written indices for the (first inner) loop is obtained by suitably 
+replacing {\tt civ@2} and {\tt civ@4} with the lower and upper bounds of 
+their ranges, i.e., {\tt civ@1} and {\tt civ@5}, which results in 
+$\lfloor W_i\rfloor={\tt [0,civ@5-1]}$.
+(This is similar to aggregating across a loop whose index ranges 
+    from {\tt{}civ@1=0} to {\tt{}civ@5-1}, because the {\tt civ} 
+    values are monotonic with step at most {\tt 1}.)
+
+Finally, the computed read and write over and under-estimates are identical 
+for any outermost iteration {\tt i}, hence the desired invariant 
+$\lceil R_i\rceil \subseteq \lfloor W_i\rfloor$ holds, and array {\tt X} 
+can be safely privatized. 
+%
+Furthermore, since an outer iteration uses the values of {\tt X} that 
+have been produced in the same iteration, range analysis determines that 
+the value {\tt X(j) $\in$ [1,i-1]}, because the update 
+{\tt X(civ@3)=j} occurs in the first inner loop of index {\tt j $\in$ [1,i-1]}. 
+%
+This information allows to similarly prove privatization 
+of {\tt Z} (the writes to {\tt Z} not shown).
+%
+Outer-loop parallelization is thus safe because 
+privatization has eliminated all carried dependencies on {\tt X} and {\tt Y}. %and {\tt Z}.
+
+\vspace{1ex}
+Parallelizing loop {\tt CORREC\_do401} in Figure~\ref{fig:codeActforCorrec}(b) 
+requires more work: one needs to prove that the outer-loop's read and write 
+sets of {\tt X} do not overlap, and also that the write sets of  
+different iterations do not overlap, i.e., flow and output independence. 
+Array {\tt X} is read on index {\tt i}, which ranges from {\tt M} to {\tt N},
+hence the read(-only) overestimate across the loop is 
+{\tt$\lceil R \rceil =\cup_{i=M}^{N}(i-1)=$[M-1,N-1]}.
+%since the loop bounds are {\tt M} and {\tt N}.
+
+
+Computation of the write-set {\em overestimate} across the inner loop 
+(i)  conservatively assumes that the {\tt if} branches are always taken, and
+(ii) summarizes the three affine loop updates 
+to interval {\tt[civ@2,civ@2+3*C(i)-1]},
+e.g., {\tt X(j+civ@2)} generates {\tt[civ@2,civ@2+C(i)-1]}, since  
+{\tt j$\in$\{1$\ldots$C(i)\}}.
+
+Similar to the introductory example, outer-loop aggregation
+analyzes each path of an iteration:
+On the path on which {\tt C(i).GT.0}, we have %that 
+{\tt civ@4$=$civ@3$=$civ@2+3*C(i)}, and the path summary is
+rewritten as {\tt [civ@2,civ@4-1]}. The other path neither 
+updates {\tt X} nor increments {\tt civ}, hence it accepts the
+same summary {\tt[civ@2,civ@4-1]$=\emptyset$}.
+%, since the lower bound is greater than the upper bound.
+
+Since {\tt civ} is updated only when {\tt C(i)} is positive,
+its values are monotonically increasing within the loop with
+the lower and upper bounds being {\tt civ@1=Q} and {\tt civ@5}. 
+It follows that the write-set overestimate of the outer loop is 
+interval $\lceil W \rceil = \lceil \cup_{i=M}^{N}W_i\rceil =${\tt[Q,civ@5-1]}.
+Flow independence requires   
+$\lceil W\rceil\cap\lceil R \rceil \equiv {\tt [M-1,N-1]}\cap{\tt{}[Q,civ@5-1]}=\emptyset$,
+and a sufficient condition for this equation to hold is (easily) extracted:
+${\tt Q} \ge {\tt N}~\vee~{\tt M} > {\tt{}civ@5}$.
+%
+Finally, output independence is proven statically, similarly to the 
+{\sc civ} loop of Figure~\ref{fig:introEg}.
+%statically in a fashion similar 
+%to the one shown for the {\sc civ} loop in Figure~\ref{fig:introEg}.
+%in a similar fashion, i.e., 
+%it is modeled via a set equation whose terms are computed as before.
+
+\vspace{1ex}
+We conclude this section with {\em two high-level observations}: %  
+{\em First}, our analysis summarizes {\sc civ} and affine subscripts
+much in the same way, and enables a dependence test which is agnostic
+to the kind of subscripts that were used.
+%
+%is driven by verifying the algebraic 
+%invariants that allow the {\sc civ} subscripts to be summarized 
+%via the same symbolic set on all control-flow paths:
+%In both examples (i) {\sc civ} (and affine) subscripts are 
+%summarized much in the same way, and (ii) the dependence %/privatization 
+%test is agnostic to the kind of subscripts that were used.
+%operate uniformly on summaries
+%obtained from regular and {\sc civ} accesses.
+% 
+%the resulted summaries
+%and succeed without any other modifications or pattern-matching support. 
+%
+These properties do not seem to hold for related solutions: For example, 
+a technique~\cite{CohenBeyondMon} that disambiguates pairs of accesses 
+of shape {\tt \{X(civ),X(civ+CT)\}} may prove the output 
+independence of {\tt CORREC\_do401}, but will not prove the flow-independence 
+of either loop.
+Similarly, pattern-matching the consecutively-written single-index-array
+access~\cite{PaduaStackArr,VEG} solves loop  {\tt ACTFOR\_do240} but not
+{\tt CORREC\_do401}.
+
+
+{\em Second}, summary approximation has been key to successful
+analysis. With the second code, overestimating the write set 
+of the inner loop by assuming that all branches are taken 
+allowed the {\sc civ} subscripts to be aggregated in the 
+interval domain. 
+More importantly, note that the separation of the 
+read and write sets cannot be verified statically, i.e.,
+flow independence requires a runtime condition. 
+It follows that the accurate write-first\footnote{
+For simplicity, the discussion used read/write sets, 
+but our analysis computes read-only, read-write and write-first sets.
+}
+({\sc wf}) summary at the (outer) iteration level is the 
+set-difference between the terms corresponding to the inner-loop 
+{\sc civ}-aggregated subscripts and the affine (read) subscript {\tt i},
+respectively.  While the accurate {\sc wf} summary cannot be aggregated 
+as an interval across the outer loop, its overestimate,
+which includes only the {\sc civ} term, can and is sufficient
+for testing loop independence. Furthermore, if an affine 
+(or different-{\sc civ})
+write access is added to the code, the {\sc wf} overestimate
+is still computable by separately aggregating the two
+terms and uniting the results.%taking the union of the results.
 
 \subsection{Notations and Problem Statement}
 \label{subsec:ProblemHL}
