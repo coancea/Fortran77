@@ -671,7 +671,7 @@ on the evaluation of {\tt i.EQ.1}, either the value
 of {\tt civ@1} for the first iteration, or the value of 
 {\tt civ@4} for all other iterations.
 
-For simplicity, this section discusses in term of read and write sets 
+For simplicity, this (sub)section discusses in term of read and write sets 
 of subscripts, but our analysis uses {\sc ro}, {\sc rw}, {\sc wf} sets.
 %
 One difficulty in parallelizing loop {\tt ACTFOR\_do240} is to
@@ -1065,7 +1065,7 @@ that contains {\sc civ} variables on its corresponding {\sc veg}\footnote{
 In principle, we may have ``regular'' gated-interval pairs, and also 
 different pairs may correspond to {\sc civ}s from different {\sc veg}s. 
 These are treated independently and the result is the union of partial results.
-Analysis fails if one pair exhibits two {\sc civ}s belonging
+Analysis fails if one interval exhibits two {\sc civ}s belonging
 to different {\sc veg}s.}. 
 This corresponds to identifying the {\sc civ} node
 that most-accurately describes the program point {\tt PP$_L$} 
@@ -1225,9 +1225,10 @@ and the back node with the {\sc civ} $\mu$ node of iteration $i$,
 which results in interval {\tt[civ@1,civ@2-1]}.
 
 Finally, if the over and underestimate results are identical then the result is
-exact and the per-iteration or the partial/total aggregated result can be used
-instead of $U_i$ or $\cup_{k=1}^{i-1} U_i$ or $\cup_{i=1}^n U_i$.  This is the
-case with loop {\tt do j} in Figure~\ref{fig:codeActforCorrec}(a).  
+exact 
+%and the per-iteration or the partial/total aggregated result can be used
+%instead of $U_i$ or $\cup_{k=1}^{i-1} U_i$ or $\cup_{i=1}^n U_i$.  
+This is the case with loop {\tt do j} in Figure~\ref{fig:codeActforCorrec}(a).  
 %
 The computed summaries allow now to prove the flow and output independence of the 
 two loop examples, as we have already seen in Section~\ref{Intro:RelAppLim}.
@@ -1242,7 +1243,7 @@ This section presents several refinements of the basic analysis,
 that allow to parallelize several difficult loops, such as {\tt EXTEND\_do400} 
 of {\tt track} benchmark. Since even the simplified code
 is too complex for paper presentation, Figure~\ref{fig:VegEXTEND} presents the 
-{\sc veg} of inner loop {\tt EXTEND\_do500}, which sheds significantly more 
+{\sc veg} of {\em inner loop} {\tt EXTEND\_do500}, which sheds significantly more 
 insights than the code would do.
 
 
@@ -1333,12 +1334,13 @@ denoted $WF^p$.
 %, from the {\sc ro}$_i$ and {\sc rw}$_i$ sets. 
 The result summary replaces {\sc ro}$_i$ in Figure~\ref{fig:LoopAggreg}'s equations.
 
-If the current node of {\sc ro}$_i$ is an interval ({\sc lmad}) $L$ then we extract a 
+The algorithm pattern-matches the shape of the read-only summary:
+If the current node is an interval $L$ then we extract a % of {\sc ro}$_i$ 
 sufficient predicate for $L - WF^p = \emptyset$ by using the {\sc usr}-to-predicate
 translation $\mathcal{F}$ mentioned in Section~\ref{subsec:Background}.   
 If the predicate statically evaluates to {\tt true} then it is safe to 
 filter $L$ out, otherwise $L$ (or $L-WF^p$) is kept.  
-%
+
 Similarly, if the current node, named $R$, is a loop or callsite node, 
 then we check using $\mathcal{F}$ whether an interval overestimate of 
 $R$ is included in $WF^p$; if so then $R$ is filtered out, otherwise 
@@ -1350,7 +1352,7 @@ then each term is filtered and the results are composed back.
 If $R$ is a subtraction node $A-B$ then $A$ is filtered with the union 
 of $WF^p$ and an interval underestimate of $B$. 
 
-Filtering the $RO_{i}$ set depicted in Figure~\ref{fig:USR_ROio_EXTEND_do500}
+Filtering the read-only set depicted in Figure~\ref{fig:USR_ROio_EXTEND_do500}
 with the computed $\lfloor \cup_{k=1}^{i-1}WF_k\rfloor={\tt [civ@1,civ@2-1]}$
 results in the simple $RO'_{i} = {\tt\{i-1\}}$, where the problematic 
 subtraction node, denoted by {\tt (**)} in Figure, has been simplified\footnote{
@@ -1380,7 +1382,7 @@ One can observe that output-dependencies may exist, since
 the output-independence equation of Figure~\ref{fig:IndEq} is not satisfied:
 $\lceil WF_{i}\rceil \cap \lceil \cup_{k=1}^{i-1}WF_{k} \rceil \equiv {\tt\{civ@1\}}\ne\emptyset$.
 (This behavior is caused by a {\tt 0}-evolution path on which the array is updated,
-and which causes cross-iteration output dependencies.)
+and causes observable cross-iteration output dependencies.)
 
 Still, dependencies exhibit a well-structured pattern that our 
 implementation exploits. The key observations are: 
@@ -1405,12 +1407,12 @@ implementation exploits. The key observations are:
 
 %verified at runtime via predicates.
 If all properties hold, then the output-dependency pattern is resolved 
-by privatizing the array (updates) and by copying out, at iteration's
-end, the indices belonging to the $\lfloor WF_i\rfloor$ 
-underestimate, i.e., {\tt[civ@1,civ@8-1]}.
-The last iteration writes directly to global storage, and because
-it increases {\sc civ}, it is guaranteed to overwrite the uncommitted 
-part of previous (non-increasing) iterations.
+by privatizing the array (updates) and by copying out, at 
+iteration's end, the indices belonging to the $\lfloor WF_i\rfloor$ 
+{\em underestimate}, i.e., {\tt[civ@1,civ@8-1]}.
+The last iteration copies in and out the overestimate (or updates directly),
+and because it increases {\sc civ}, it is guaranteed to overwrite the 
+uncommitted part of previous (non-increasing) iterations.
 %
 The last property is verified at runtime, during the {\sc civ}-value
 (pre)computation, while the first two are derived statically 
@@ -1439,7 +1441,8 @@ it is always updated in reduction-like statements, e.g., {\tt civ=civ+3*C(i)},
 but it is read in arbitrary statements, e.g., in a subscript.
 
 
-While not always necessary~\cite{PaduaStackArr}, we  (pre)compute in %always 
+%While not always necessary~\cite{PaduaStackArr}, we  (pre)compute in %always 
+While related approaches~\cite{PaduaStackArr,VEG} avoid this, we always pre-compute in
 parallel, prior to loop execution, the {\sc civ}$_\mu$ values at the beginning 
 of each (chunk of) iteration(s).
 Reasons are threefold: {\em First}, in most cases %it is cleaner to do so, and 
@@ -1490,7 +1493,7 @@ ENDDOALL
 \vspace{-1ex}
 \hrule
 \vspace{-0.5ex}
-\caption{ Parallel (Pre)Computation of {\sc civ}$_\mu$ Values.}
+\caption{ Parallel Computation of {\sc civ}$_\mu$ Values.}
 \label{fig:CivSlice} %
 \end{figure}
 
@@ -1499,9 +1502,10 @@ in Figure~\ref{fig:codeActforCorrec}(b), where scalars {\tt i} and {\tt civ}
 were privatized. The slice computes the per-iteration {\sc civ} increments 
 and records them in {\tt CIVS}. Then {\tt SCAN}
 computes in parallel the prefix sum of the {\tt CIVS} values, 
-hence the {\sc civ}$_\mu$ values at the beginning of each iteration. 
+which are used each by one iteration of the parallelized loop.
+%hence the {\sc civ}$_\mu$ values at the beginning of each iteration
 %
-Requirements for correctness are {\em twofold}:  
+Correctness requirements are {\em twofold}:  
 
 {\em First}, all symbols that appear in the slice have been already proven 
 to not introduce cross-iteration dependencies in the original loop; otherwise 
@@ -1537,7 +1541,8 @@ parallel execution of the original loop: The arrays that were proven flow and ou
 independent are shared, i.e., not privatized.   For cases such as {\tt EXTEND\_do400},
 that exhibit the special pattern of output dependencies, we adopt a strategy similar
 to the one used for {\sc civ} computation: arrays such as {\tt X} are privatized,
-their read-set {\sc ro}$_i$ $\cup$ {\sc rw}$_i$ is copied in, and the per-iteration {\sc wf} underestimate
+their read-set {\sc ro}$_i$ $\cup$ {\sc rw}$_i$ is copied in, and the per-iteration 
+{\sc wf} underestimate
 is copied-out at the iteration's end.   Our technique is deeply integrated with the
 underlying compiler framework: On the one hand, $\mathcal{F}$ uses the {\sc civ}-summarized
 over and underestimates to derive sufficient-independence predicates.
