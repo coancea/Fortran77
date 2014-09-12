@@ -149,11 +149,13 @@ array-reference summaries, conditional induction variables}
 \enlargethispage{\baselineskip}
 
 Array-subscript analysis, e.g., array-dependence analysis~\cite{BanerjeeIneqTest,FeautrierDataflow,Pugh92theomega},
-typically requires that subscript expressions are affine formulas
-in the indices of the enclosing loop nest.   A known problem in 
-the area of automatic loop parallelization is that a significant 
-number of important loops exhibit subscripts 
-that use induction variables that cannot be expressed by such closed-form 
+typically requires subscript expressions to be affine expressions
+of the indices of the enclosing loop nest.   A known difficulty in 
+performing this analysis arises when loops exhibit subscripts that
+use induction variables that cannot be expressed as closed-form
+%the area of automatic loop parallelization is that a significant 
+%number of important loops exhibit subscripts 
+%that use induction variables that cannot be expressed by such closed-form 
 formulas, because they are incremented differently, or not at all, on 
 different control-flow paths of the loop.   We call such variables
 {\em conditional induction variables} or {\sc civ} for short.
@@ -169,7 +171,9 @@ DO i =1,N  \emphh{\em Var.}  DO i = 1, N
   k = k+2    \emphh{\mymath{\Rightarrow}}    a(k0+2*i)=.. 
   a(k)=..  \emphh{\em Sub.}  ENDDO         
 ENDDO            k=k0+MAX(2N,0)
+
    (a)               (b) 
+
 \end{colorcode}
 \end{minipage}
 \begin{minipage}{0.35\columnwidth}
@@ -179,7 +183,9 @@ DO i = 1, N
     civ = civ + 1 \emp{\mymath{\Rightarrow}{\em ?}} 
     a(civ) = ...
 ENDIF ENDDO
+
       (c)
+
 \end{colorcode}
 \end{minipage}
 \hrule
@@ -204,7 +210,7 @@ incrementing {\tt k} and (ii) enables a straightforward proof of the invariant
 that two different iteration {\tt i$_1$} and {\tt i$_2$} cannot write the same
 element of array {\tt a}, a.k.a., output independence: 
 {\tt k0+2*i$_1$~=~k0+2*i$_2$ $\Rightarrow$ i$_1$=i$_2$}.
-It follows that the middle loop can be safely parallelized.
+It follows that the loop in Figure~\ref{fig:introEg}(b) can be safely parallelized.
 
 The loops in Figures~\ref{fig:introEg}(a)~and~(c) are similar 
 %to the leftmost one, 
@@ -224,12 +230,12 @@ the values of {\tt civ} are increasing % (non-strictly)
 within the loop with step at most one.
 %, which would allow, for example, 
 %to compute them in parallel via a prefix-sum bulk operation. 
-This paper does not contribute to this stage, but uses  
-uses previously developed techniques~\cite{VEG}.
+This paper does not contribute to this stage, but  
+exploits previously developed techniques~\cite{VEG}.
 
 Second and more relevant, each pair of read-write subscripts is ({\em locally}) 
 disambiguated, by means of {\em specialized} dependency tests that exploit
-{\sc civ}'s properties and may also rely on pattern matching.
+{\sc civ}'s properties. %and may also rely on pattern matching.
 In our example, the cross-iteration monotonicity of the {\sc civ} values 
 dictates that the {\sc civ} value, named {\tt civ$_2$} after increment 
 in some iteration {\tt i$_2$} is strictly greater than the value,
@@ -246,8 +252,8 @@ array references across control-flow constructs, e.g., branches, loops, and
 %function calls, 
 model dependency testing as an equation on the resulted abstract sets.
 %
-In practice, they have been found to scale better than analysis
-based on pairwise accesses.
+In practice, they have been found to scale better than previously developed
+analysis based on pairwise accesses~\cite{SUIF}.
 % 
 %In practice, they have been found better suited to analyze more complex loops 
 %than analyses that operate at pair-of-accesses level, but they 
@@ -277,12 +283,14 @@ at the entry and end of iteration {\tt i}, respectively.
 On the {\tt THEN} path, i.e., {\tt cond(b(i))} holds, the write set 
 of array {\tt a} is interval $W_i=${\tt [civ$_\mu^i$+1,civ$_b^i$]}, 
 i.e., point {\tt \{civ$_\mu^i$+1\}}, because the incremented value 
-of {\tt civ} is the one live at iteration's end. 
+of {\tt civ} is live at the end of the iteration. 
 %
-On the {\tt ELSE} path, the write set of {\tt a} is the empty set.
-However, in order to obtain an unified representation we can 
-represent the empty set with an interval in which the lower bound
-is higher than the upper bound.
+On the {\tt ELSE} path, the write set of {\tt a} is the empty set,
+which can be represented (for uniformity) as an interval
+%
+%However, in order to obtain an unified representation we can 
+%represent the empty set with an interval 
+in which the lower bound is higher than the upper bound.
 This is true because {\tt civ} is not incremented and so
 {\tt civ$_\mu^i$} equals {\tt civ$_b^i$}, hence 
 {\tt civ$_\mu^i$+1$ > $civ$_b^i$}.
@@ -324,12 +332,12 @@ that no distinct iterations write a common element of {\tt a}.
 
 %\enlargethispage{\baselineskip}
 
-{\bf Main contributions of the paper are:}
+{\bf This paper makes the following contributions:}
 \begin{itemize}
     \item A flow-sensitive analysis that extends (generalizes) 
             program level summarization to support {\sc civ}-based 
             subscripts, which leads to the parallelization of
-            previous unreported loops.
+            previously unreported loops.
 %by meaningfully combining the control-flow 
 %of the summary with the one of the {\sc civ}.
 %            and disambiguates loops that were not reported 
@@ -339,7 +347,7 @@ that no distinct iterations write a common element of {\tt a}.
             program slice that performs the parallel-prefix-sum
             evaluation of the per-iteration {\sc civ} values 
             from the main (parallel) computation in which 
-            they are plugged in,
+            they are inserted,
 
     \item An evaluation of five difficult to parallelize benchmarks 
             with important {\sc civ}-subscripted loops, which
@@ -349,13 +357,12 @@ that no distinct iterations write a common element of {\tt a}.
 %            e.g., {\sc civ}-values computation, which are either 
 %            negligible or scale well with the degree of parallelism.
 %
-            Speedups of two of the benchmarks shown
-            in this paper were reported by~\cite{CosPLDI}, however
-            the compiler techniques that achieve these results were 
-            never presented, perhaps due to lack of space.
-
-
 \end  {itemize}
+
+Speedups of two of the benchmarks shown
+in this paper were also reported by~\cite{CosPLDI}, however
+the compiler techniques to achieve these results were 
+never presented, perhaps due to lack of space.
 
 
 Finally, our technique is well integrated % fully implemented and 
@@ -363,14 +370,16 @@ in a {\tt Fortran77} compiler that uses {\em hybrid analysis},
 which verifies dataset-sensitive invariants % (statically-unverifiable)  
 at runtime by evaluating a cascade of sufficient-condition 
 predicates of increasing complexity, until one succeeds. 
-(The cascade of predicates is statically synthesized from the summary 
+(Predicates are statically synthesized from the summary 
 equation that models the desired invariant.)
 %
-We note that hybrid analysis does not require modifications
+We note that our existing hybrid analysis does not require modifications
 but directly benefits from our technique: 
 
-First, our analysis simplifies {\sc civ} summaries to a form 
-that enables successful verification of the desired invariants. 
+First, our analysis simplifies {\sc civ}-summary expressions
+enabling successful verification of the desired invariants.
+%to a form 
+%that enables successful verification of the desired invariants. 
 Second, the pre-computation of {\sc civ} values allows:
   (i) runtime verification of {\sc civ} monotonicity whenever 
           this cannot be statically established, 
@@ -378,10 +387,9 @@ Second, the pre-computation of {\sc civ} values allows:
           be expressed in terms of the {\sc civ} values at loop's 
           entry, end, and anywhere in between, and 
 (iii) safe parallelization in the simple case when
-        {\sc civ} are used as data, rather than for indexing,
-        within the loop.
-Third, summaries have a wider applicability than dependency testing,
-e.g., in the context of array {\sc ssa}.
+        {\sc civ} are not used for indexing.
+Third, {\sc civ} summaries have a wider applicability than 
+dependency testing, e.g., in the context of array {\sc ssa}.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -414,7 +422,7 @@ in our compiler, but to which this paper does not claim any contributions:
 %Our analysis builds on the following compiler infrastructure:
 First, a baseline analysis summarizes array indices into read-only~{\sc ro}, 
 read-write~{\sc rw} and write-first~{\sc wf} abstract sets, using a 
-representation named unified set reference ({\sc usr}).
+representation named unified set reference~\cite{HybAn} ({\sc usr}).
 %, which is shown in Figure~\ref{fig:USRgrammar}.
 %
 Second, loop independence is then modeled as an equation in the 
@@ -422,16 +430,17 @@ Second, loop independence is then modeled as an equation in the
 %
 Third, whenever this equation cannot be satisfied statically, a 
 predicate is extracted from it, and its evaluation verifies independence 
-at runtime. 
+at runtime~\cite{CosPLDI}. 
 %
-Finally, the value evolution graph ({\sc veg}) is used to model the 
-flow of {\sc civ} values in a loop, and to query scalars' ranges.
+Finally, the value evolution graph~\cite{VEG} ({\sc veg}) is 
+used to model the flow of {\sc civ} values in a loop, and to 
+query scalars' ranges.
 
 %, whose
 %grammar is shown in Figure~\ref{fig:USRgrammar}
 
-\vspace{1ex}
-%\begin{figure}[hbt]\vspace{-1ex}
+%\vspace{1ex}
+\begin{figure}[hbt]
 \hspace{-4ex}
 \begin{tabular}{lclr}
 $USR$ & ::= &  $LMAD$                 & ($n$-dim strided intervals)\\
@@ -443,14 +452,14 @@ $USR$ & ::= &  $LMAD$                 & ($n$-dim strided intervals)\\
       & {\tt~~}| & $_l\cup_{k=1}^{i-1} \ USR$ & (partial recurrence)\\
       & {\tt~~}| & $CallSite \ \bowtie \ USR$ & (callsite translation)
 \end{tabular}%\vspace{-2ex}
-%\caption{Unified Set Reference (USR) Grammar.}
-%\label{fig:USRgrammar}
-%\end{figure}
-\vspace{1ex}
+\caption{Unified Set Reference (USR) Grammar.}
+\label{fig:USRgrammar}
+\end{figure}
+%\vspace{1ex}
 
 {\bf USR Construction}~\cite{HybAn}.
 %
-Summaries use the representation shown above %in Figure~\ref{fig:USRgrammar},
+Summaries use the representation shown in Figure~\ref{fig:USRgrammar},
 and can be seen as a {\sc dag} in which leaves correspond,
 for simplicity, to strided (multi-dimensional) intervals, 
 named linear memory access descriptors~\cite{LMAD} ({\sc lmad}) in the literature.
@@ -524,7 +533,7 @@ $\mbox{ }\{ \cup_{i=1}^{N}(RW_i \cap (\cup_{k=1}^{i-1}RW_k))\}=\emptyset$ \newli
 	} 
 \end{tabular}
 \hrule
-\caption{ (a) Summarizing Across a Loop and (b) Modeling Loop Independence with Set Equations.}
+\caption{ (a) Loop Memory Reference Summary and (b) Loop Independence with Set Equations.}
 \label{fig:UsrEq} %
 \end{figure}
 
@@ -565,17 +574,17 @@ of a scalar variable.
 {\sc veg}s are constructed on demand at loop and subroutine levels.
 %
 The entry node, e.g., merging cross-iteration values,  is named 
-the $\mu$ node and is drawn via a double circle. The recurrence is 
-depicted via a dotted line, named the {\em back edge}, and the
-back node is drawn in a hexagon.
+the $\mu$ node and is shown in Figures~\ref{fig:VegACTFOR}~and~\ref{fig:VegCORREC} 
+as a double circle. The recurrence is shown as a dotted line, 
+named the {\em back edge}, and the back node is drawn as a hexagon.
 %
-Regular nodes, drawn in circles, correspond to reduction-like statements.
+Regular nodes, drawn as circles, correspond to reduction-like statements.
 For example Figures~\ref{fig:VegACTFOR}~and~\ref{fig:VegCORREC} 
 depict the {\sc veg}s for the running-example loops in 
 Figure~\ref{fig:codeActforCorrec}, which will be discussed later. 
-Even without looking at the code, one can tell that both loops
+This representation shows that both loops
 have a variable named {\tt civ} that is incremented on some loop
-paths with exactly {\tt 1} and {\tt 3*C(i)}, respectivelly, 
+paths with exactly {\tt 1} and {\tt 3*C(i)}, respectively, 
 and is not updated on other paths. 
 %e.g., {\tt civ@3 = civ@2 + 1} is summarized via the edge 
 %of evolution $1$ between {\tt civ@2} and {\tt civ@3} in Figure~\ref{fig:VegACTFOR}.
@@ -612,7 +621,7 @@ assumes monotonicity, and verifies it at runtime in the slice
 that (pre)computes the {\sc civ} values. 
 
 
-\section{Summarizing Monotonic CIVs}
+\section{Monotonic CIV Summaries}
 \label{sec:MonotonicCiv}
 
 %The introductory example showed a relatively straightforward
@@ -663,12 +672,12 @@ to an interval.
 %may be used to filter out terms of the read-write summary. 
 %
 
-Discussion is organized as follows:
+The remainder of this section is organized as follows:
 Section~\ref{Intro:RelAppLim} intuitively demonstrates our approach 
 on two running-example loops. %from the \textsc{Perfect-Club} suite.
 %
 {\em Section~\ref{subsec:ProblemHL}} establishes a uniform notation and
-states the problem at a high level.
+states the problem at high level.
 %
 {\em Section~\ref{subsec:BasicTechn}} presents the basic flow-sensitive 
 analysis technique for summarizing over and underestimates, and 
@@ -685,7 +694,7 @@ that belong to the write-first underestimate.
 %Section~\ref{subsec:Track}.
 %
 Finally, {\em Section~\ref{subsect:CivImplem}} details on the overall 
-implementation, and focuses on how to (pre)compute safely and in parallel 
+implementation, and focuses on how to (pre)compute safely, in parallel 
 the {\sc civ}$_\mu$ values associated to each iteration.
 
 
@@ -705,9 +714,9 @@ of {\tt civ@1} for the first iteration, or the value of
 For simplicity, this (sub)section discusses in term of read and write sets 
 of subscripts, but our analysis uses {\sc ro}, {\sc rw}, {\sc wf} sets.
 %
-One difficulty in parallelizing loop {\tt ACTFOR\_do240} 
-in Figure~\ref{fig:codeActforCorrec}(a) is to
-prove that array {\tt X} can be privatized, i.e., that all
+One difficulty in parallelizing loop {\tt ACTFOR\_do240}
+in Figure~\ref{fig:codeActforCorrec}(a) (from {\tt bdna}, \textsc{PerfectClub})
+is to prove that array {\tt X} can be privatized, i.e., that all
 indices of {\tt X} which are read in the second inner loop have been 
 written in the first inner loop by the same iteration of the outer loop.
 The plan is to {\em summarize} the read and written indices at the level of
@@ -874,9 +883,9 @@ to the kind of subscripts that were used.
 %the resulted summaries
 %and succeed without any other modifications or pattern-matching support. 
 %
-These properties do not seem to hold for related solutions: For example, 
-a technique~\cite{CohenBeyondMon} that disambiguates pairs of accesses 
-of shape {\tt \{X(civ),X(civ+CT)\}} may prove the output 
+These properties do not seem to hold for solutions presented in related
+work: For example, a technique~\cite{CohenBeyondMon} that disambiguates 
+pairs of accesses of shape {\tt \{X(civ),X(civ+CT)\}} may prove the output 
 independence of {\tt CORREC\_do401}, but will not prove the flow-independence 
 of either loop.
 Similarly, pattern-matching the consecutively-written single-index-array
@@ -885,12 +894,12 @@ access~\cite{PaduaStackArr,VEG} solves loop  {\tt ACTFOR\_do240} but not
 
 
 {\em Second}, summary approximation has been key to successful
-analysis. With the second code, overestimating the write set 
-of the inner loop by assuming that all branches are taken 
-allowed the {\sc civ} subscripts to be aggregated in the 
+analysis. For example in the code in Figure~\ref{fig:codeActforCorrec}(b), 
+overestimating the write set of the inner loop by assuming that all 
+branches are taken allowed the {\sc civ} subscripts to be aggregated in the 
 interval domain. 
 More importantly, the separation of the read and write sets cannot 
-be verified statically, i.e., it requires a runtime condition. 
+be verified statically, i.e., it requires runtime information. 
 %
 It follows that the accurate write-first summary at the 
 outer-loop level cannot be statically simplified to an interval,
@@ -915,7 +924,7 @@ Finally, even if an affine (or different-{\sc civ})
 is still computable by separately aggregating each
 term and uniting the results. %taking the union of the results.
 
-\subsection{Notations and Problem Statement}
+\subsection{Formal Problem Statement}
 \label{subsec:ProblemHL}
 
 We denote by $\mathcal{L}$ a normalized loop of index $i\in\{1..N\}$ that
@@ -933,7 +942,7 @@ If $s=1$, we omit writing $s$; if the interval
 is point $p$, we write it $\{p\}$.
   
 
-The addressed problem is to compute symbolic under/over-estimates in the 
+The goal is to compute symbolic under/over-estimates in the 
 interval domain, denoted by $\lfloor A \rfloor$/$\lceil A \rceil$, 
 for $U = \cup_{i=1}^{N} U_i$.
 %
@@ -1637,22 +1646,49 @@ The second column shows
 
 
 %%% orig .37\textwidth  35ex
+%\begin{figure*}[t]
+%	\begin{tabular}{c c c} 
+%\multicolumn{2}{}{} 
+%	\multirow{2}{*}[37ex]
+%	{      		%\hspace{-6ex}	
+%               \includegraphics[width=.40\textwidth]{Figures/EmpRes/BenchParRes}\vspace{2ex}
+%	} & { \hspace{-55ex}
+%                    \includegraphics[width=.40\textwidth]{Figures/EmpRes/LoopParRes} \vspace{2ex}
+%	} \\ 
+%	\multirow{2}{*}[35ex]
+%	{           
+ %               \includegraphics[width=.40\textwidth]{Figures/EmpRes/LoopScalRes}
+%	} & { \hspace{16ex}
+%                \includegraphics[width=.40\textwidth]{Figures/EmpRes/TrackScal}
+%	}
+%\end{tabular} 
+%\hrule
+%\caption{ Benchmark and Loop-Level Normalized (Total) Parallel Runtime. Sequential Runtime is 1.}
+%\label{fig:ParRuntime} %
+%\end{figure*}
+
+
 \begin{figure*}[t]
-	\begin{tabular}{c c c} 
-\multicolumn{2}{}{} 
-	\multirow{2}{*}[37ex]
-	{      		%\hspace{-6ex}	
-                \includegraphics[width=.40\textwidth]{Figures/EmpRes/BenchParRes}\vspace{2ex}
-	} & { \hspace{-55ex}
-                    \includegraphics[width=.40\textwidth]{Figures/EmpRes/LoopParRes} \vspace{2ex}
-	} \\ 
-	\multirow{2}{*}[35ex]
-	{           
-                \includegraphics[width=.40\textwidth]{Figures/EmpRes/LoopScalRes}
-	} & { \hspace{16ex}
-                \includegraphics[width=.40\textwidth]{Figures/EmpRes/TrackScal}
-	}
-\end{tabular} 
+\begin{minipage}{1.2\columnwidth}
+    \includegraphics[width=0.7\textwidth]{Figures/EmpRes/BenchParRes}
+
+      {\bf~~~~~~~~~~~~~~~~~~~~~~~~~~~~~(a)} \vspace{2ex}
+
+    \includegraphics[width=0.7\textwidth]{Figures/EmpRes/LoopScalRes}
+      
+      {\bf~~~~~~~~~~~~~~~~~~~~~~~~~~~~~(c)}\vspace{1ex}
+
+\end{minipage}
+\begin{minipage}{0.9\columnwidth}
+    \includegraphics[width=0.9\textwidth]{Figures/EmpRes/LoopParRes} 
+
+      {\bf~~~~~~~~~~~~~~~~~~~~~~~~~~~~~(b)}\vspace{2ex}
+
+   \includegraphics[width=0.9\textwidth]{Figures/EmpRes/TrackScal}
+      
+      {\bf~~~~~~~~~~~~~~~~~~~~~~~~~~~~~(d)}\vspace{1ex}
+
+\end{minipage}
 \hrule
 \caption{ Benchmark and Loop-Level Normalized (Total) Parallel Runtime. Sequential Runtime is 1.}
 \label{fig:ParRuntime} %
@@ -1759,21 +1795,19 @@ a $16$-core {\tt AMD Opteron(TM) 6274} system with $128${\tt GB} memory.
 
 \vspace{1ex}
 
-{\bf Results} are depicted in Figure~\ref{fig:ParRuntime}. 
-%
-The top-left and top-right charts show the normalized-parallel runtime for each 
-entire benchmark and {\sc civ} loop, respectively, where the {\sc civ}-computation
+{\bf Results.} Figure~\ref{fig:ParRuntime}(a)~and~(b) show
+the normalized-parallel runtime for each entire benchmark 
+and {\sc civ} loop, respectively, where the {\sc civ}-computation
 overhead is included in each bar.
 %  where bars with names ending 
 %in {\tt \_OV} show separately (only) the (non-negligible) runtime overhead of 
 %(pre)computing the {\sc civ}s. 
 %Note that the {\sc civ}-(pre)computation overhead is included
 %for in the corresponding benchmark/loop bar.
-
-
-Table~\ref{tab:LoopBenchProps} shows that the {\sc civ}-computation slice 
-(i) represents a small fraction $6\%$ of the execution of the {\tt pric\_r}
-benchmark,
+%
+Table~\ref{tab:LoopBenchProps} has shown that the {\sc civ}-computation slice 
+(i) represents a small fraction $6\%$ of the execution of the 
+{\tt pric\_r} benchmark,
 %loop for {\tt PRICE\_R\_do10}, 
 but (ii) it accounts for $45\%$ of the parallel execution time for {\tt track}.
 The latter case is not surprising since the slice contains almost all statements 
@@ -1787,20 +1821,21 @@ The less-than-optimal runtime for {\tt bdna}, {\tt nasa7}, and
 small data sets. However, their loops show better results,
 e.g., {\tt ACCEL\_do10} shows a  $7.1$x speedup on eight cores. % healthy
 
-The loop-level scalability results of the bottom-left chart hint that 
-memory bandwidth is the main limitation: 
-For example, {\tt track}'s loops, overheads included, seem to scale well up to four cores,
-not so well on eight, and poor on sixteen. %(and its overhead has a similar behavior).
-The other-loops scalability is affected when passing from eight to sixteen
-cores, e.g., {\tt ACCEL\_do10} shows (only) $11$x speedup on sixteen cores.
-%, in comparison to $7.1$x on eight.
+The loop-level scalability results of Figure~\ref{fig:ParRuntime}(c) 
+hint that memory bandwidth is the main limitation. 
+%For example, {\tt track}'s loops, overheads included, seem to scale well up to four cores,
+%not so well on eight, and poor on sixteen. %(and its overhead has a similar behavior).
+%The other-loops scalability is affected when passing from eight to sixteen
+%cores, e.g., {\tt ACCEL\_do10} shows (only) $11$x speedup on sixteen cores.
+%%, in comparison to $7.1$x on eight.
 
 %(-O4) and tested against IBM’s xlf compiler version
 %13 on a 8 dual-core POWER 5+@1.9GHz, 32Gb-memory machine.
-To check this prediction we run {\sc track}, the most complex benchmark in our suite, 
+To check this hypothesis we run {\sc track}, the most complex benchmark in our suite, 
 on a bandwidth-friendlier system: an eight dual-core {\tt POWER 5+@1.9GHz} with $32$GB memory. 
-The results, depicted in the bottom-right chart of Figure~\ref{fig:ParRuntime} show 
-significantly-improved scalability up to sixteen cores for the total runtime. 
+The results, depicted in Figure~\ref{fig:ParRuntime}(d) show 
+significantly-improved scalability up to sixteen cores for the 
+total runtime. 
 The {\sc civ}-computation overheads, also depicted in the chart, scales equally well.  
 %and 
 %the {\sc civ}-computation overhead of {\tt track}.
