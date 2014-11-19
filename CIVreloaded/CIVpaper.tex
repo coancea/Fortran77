@@ -171,7 +171,9 @@ DO i =1,N  \emphh{\em Var.}  DO i = 1, N
   k = k+2    \emphh{\mymath{\Rightarrow}}    a(k0+2*i)=.. 
   a(k)=..  \emphh{\em Sub.}  ENDDO         
 ENDDO            k=k0+MAX(2N,0)
+
    (a)               (b) 
+
 \end{colorcode}
 \end{minipage}
 \begin{minipage}{0.35\columnwidth}
@@ -181,7 +183,9 @@ DO i = 1, N
     civ = civ + 1 \emp{\mymath{\Rightarrow}{\em ?}} 
     a(civ) = ...
 ENDIF ENDDO
+
       (c)
+
 \end{colorcode}
 \end{minipage}
 \hrule
@@ -366,7 +370,7 @@ in a {\tt Fortran77} compiler that uses {\em hybrid analysis},
 which verifies dataset-sensitive invariants % (statically-unverifiable)  
 at runtime by evaluating a cascade of sufficient-condition 
 predicates of increasing complexity, until one succeeds. 
-(The cascade of predicates is statically synthesized from the summary 
+(Predicates are statically synthesized from the summary 
 equation that models the desired invariant.)
 %
 We note that our existing hybrid analysis does not require modifications
@@ -418,7 +422,7 @@ in our compiler, but to which this paper does not claim any contributions:
 %Our analysis builds on the following compiler infrastructure:
 First, a baseline analysis summarizes array indices into read-only~{\sc ro}, 
 read-write~{\sc rw} and write-first~{\sc wf} abstract sets, using a 
-representation named unified set reference ({\sc usr}).
+representation named unified set reference~\cite{HybAn} ({\sc usr}).
 %, which is shown in Figure~\ref{fig:USRgrammar}.
 %
 Second, loop independence is then modeled as an equation in the 
@@ -426,16 +430,17 @@ Second, loop independence is then modeled as an equation in the
 %
 Third, whenever this equation cannot be satisfied statically, a 
 predicate is extracted from it, and its evaluation verifies independence 
-at runtime. 
+at runtime~\cite{CosPLDI}. 
 %
-Finally, the value evolution graph ({\sc veg}) is used to model the 
-flow of {\sc civ} values in a loop, and to query scalars' ranges.
+Finally, the value evolution graph~\cite{VEG} ({\sc veg}) is 
+used to model the flow of {\sc civ} values in a loop, and to 
+query scalars' ranges.
 
 %, whose
 %grammar is shown in Figure~\ref{fig:USRgrammar}
 
-\vspace{1ex}
-%\begin{figure}[hbt]\vspace{-1ex}
+%\vspace{1ex}
+\begin{figure}[hbt]
 \hspace{-4ex}
 \begin{tabular}{lclr}
 $USR$ & ::= &  $LMAD$                 & ($n$-dim strided intervals)\\
@@ -447,14 +452,14 @@ $USR$ & ::= &  $LMAD$                 & ($n$-dim strided intervals)\\
       & {\tt~~}| & $_l\cup_{k=1}^{i-1} \ USR$ & (partial recurrence)\\
       & {\tt~~}| & $CallSite \ \bowtie \ USR$ & (callsite translation)
 \end{tabular}%\vspace{-2ex}
-%\caption{Unified Set Reference (USR) Grammar.}
-%\label{fig:USRgrammar}
-%\end{figure}
-\vspace{1ex}
+\caption{Unified Set Reference (USR) Grammar.}
+\label{fig:USRgrammar}
+\end{figure}
+%\vspace{1ex}
 
 {\bf USR Construction}~\cite{HybAn}.
 %
-Summaries use the representation shown above %in Figure~\ref{fig:USRgrammar},
+Summaries use the representation shown in Figure~\ref{fig:USRgrammar},
 and can be seen as a {\sc dag} in which leaves correspond,
 for simplicity, to strided (multi-dimensional) intervals, 
 named linear memory access descriptors~\cite{LMAD} ({\sc lmad}) in the literature.
@@ -1641,22 +1646,49 @@ The second column shows
 
 
 %%% orig .37\textwidth  35ex
+%\begin{figure*}[t]
+%	\begin{tabular}{c c c} 
+%\multicolumn{2}{}{} 
+%	\multirow{2}{*}[37ex]
+%	{      		%\hspace{-6ex}	
+%               \includegraphics[width=.40\textwidth]{Figures/EmpRes/BenchParRes}\vspace{2ex}
+%	} & { \hspace{-55ex}
+%                    \includegraphics[width=.40\textwidth]{Figures/EmpRes/LoopParRes} \vspace{2ex}
+%	} \\ 
+%	\multirow{2}{*}[35ex]
+%	{           
+ %               \includegraphics[width=.40\textwidth]{Figures/EmpRes/LoopScalRes}
+%	} & { \hspace{16ex}
+%                \includegraphics[width=.40\textwidth]{Figures/EmpRes/TrackScal}
+%	}
+%\end{tabular} 
+%\hrule
+%\caption{ Benchmark and Loop-Level Normalized (Total) Parallel Runtime. Sequential Runtime is 1.}
+%\label{fig:ParRuntime} %
+%\end{figure*}
+
+
 \begin{figure*}[t]
-	\begin{tabular}{c c c} 
-\multicolumn{2}{}{} 
-	\multirow{2}{*}[37ex]
-	{      		%\hspace{-6ex}	
-                \includegraphics[width=.40\textwidth]{Figures/EmpRes/BenchParRes}\vspace{2ex}
-	} & { \hspace{-55ex}
-                    \includegraphics[width=.40\textwidth]{Figures/EmpRes/LoopParRes} \vspace{2ex}
-	} \\ 
-	\multirow{2}{*}[35ex]
-	{           
-                \includegraphics[width=.40\textwidth]{Figures/EmpRes/LoopScalRes}
-	} & { \hspace{16ex}
-                \includegraphics[width=.40\textwidth]{Figures/EmpRes/TrackScal}
-	}
-\end{tabular} 
+\begin{minipage}{1.2\columnwidth}
+    \includegraphics[width=0.7\textwidth]{Figures/EmpRes/BenchParRes}
+
+      {\bf~~~~~~~~~~~~~~~~~~~~~~~~~~~~~(a)} \vspace{2ex}
+
+    \includegraphics[width=0.7\textwidth]{Figures/EmpRes/LoopScalRes}
+      
+      {\bf~~~~~~~~~~~~~~~~~~~~~~~~~~~~~(c)}\vspace{1ex}
+
+\end{minipage}
+\begin{minipage}{0.9\columnwidth}
+    \includegraphics[width=0.9\textwidth]{Figures/EmpRes/LoopParRes} 
+
+      {\bf~~~~~~~~~~~~~~~~~~~~~~~~~~~~~(b)}\vspace{2ex}
+
+   \includegraphics[width=0.9\textwidth]{Figures/EmpRes/TrackScal}
+      
+      {\bf~~~~~~~~~~~~~~~~~~~~~~~~~~~~~(d)}\vspace{1ex}
+
+\end{minipage}
 \hrule
 \caption{ Benchmark and Loop-Level Normalized (Total) Parallel Runtime. Sequential Runtime is 1.}
 \label{fig:ParRuntime} %
@@ -1763,21 +1795,19 @@ a $16$-core {\tt AMD Opteron(TM) 6274} system with $128${\tt GB} memory.
 
 \vspace{1ex}
 
-{\bf Results} are depicted in Figure~\ref{fig:ParRuntime}. 
-%
-The top-left and top-right charts show the normalized-parallel runtime for each 
-entire benchmark and {\sc civ} loop, respectively, where the {\sc civ}-computation
+{\bf Results.} Figure~\ref{fig:ParRuntime}(a)~and~(b) show
+the normalized-parallel runtime for each entire benchmark 
+and {\sc civ} loop, respectively, where the {\sc civ}-computation
 overhead is included in each bar.
 %  where bars with names ending 
 %in {\tt \_OV} show separately (only) the (non-negligible) runtime overhead of 
 %(pre)computing the {\sc civ}s. 
 %Note that the {\sc civ}-(pre)computation overhead is included
 %for in the corresponding benchmark/loop bar.
-
-
-Table~\ref{tab:LoopBenchProps} shows that the {\sc civ}-computation slice 
-(i) represents a small fraction $6\%$ of the execution of the {\tt pric\_r}
-benchmark,
+%
+Table~\ref{tab:LoopBenchProps} has shown that the {\sc civ}-computation slice 
+(i) represents a small fraction $6\%$ of the execution of the 
+{\tt pric\_r} benchmark,
 %loop for {\tt PRICE\_R\_do10}, 
 but (ii) it accounts for $45\%$ of the parallel execution time for {\tt track}.
 The latter case is not surprising since the slice contains almost all statements 
@@ -1791,20 +1821,21 @@ The less-than-optimal runtime for {\tt bdna}, {\tt nasa7}, and
 small data sets. However, their loops show better results,
 e.g., {\tt ACCEL\_do10} shows a  $7.1$x speedup on eight cores. % healthy
 
-The loop-level scalability results of the bottom-left chart hint that 
-memory bandwidth is the main limitation: 
-For example, {\tt track}'s loops, overheads included, seem to scale well up to four cores,
-not so well on eight, and poor on sixteen. %(and its overhead has a similar behavior).
-The other-loops scalability is affected when passing from eight to sixteen
-cores, e.g., {\tt ACCEL\_do10} shows (only) $11$x speedup on sixteen cores.
-%, in comparison to $7.1$x on eight.
+The loop-level scalability results of Figure~\ref{fig:ParRuntime}(c) 
+hint that memory bandwidth is the main limitation. 
+%For example, {\tt track}'s loops, overheads included, seem to scale well up to four cores,
+%not so well on eight, and poor on sixteen. %(and its overhead has a similar behavior).
+%The other-loops scalability is affected when passing from eight to sixteen
+%cores, e.g., {\tt ACCEL\_do10} shows (only) $11$x speedup on sixteen cores.
+%%, in comparison to $7.1$x on eight.
 
 %(-O4) and tested against IBM’s xlf compiler version
 %13 on a 8 dual-core POWER 5+@1.9GHz, 32Gb-memory machine.
 To check this hypothesis we run {\sc track}, the most complex benchmark in our suite, 
 on a bandwidth-friendlier system: an eight dual-core {\tt POWER 5+@1.9GHz} with $32$GB memory. 
-The results, depicted in the bottom-right chart of Figure~\ref{fig:ParRuntime} show 
-significantly-improved scalability up to sixteen cores for the total runtime. 
+The results, depicted in Figure~\ref{fig:ParRuntime}(d) show 
+significantly-improved scalability up to sixteen cores for the 
+total runtime. 
 The {\sc civ}-computation overheads, also depicted in the chart, scales equally well.  
 %and 
 %the {\sc civ}-computation overhead of {\tt track}.
