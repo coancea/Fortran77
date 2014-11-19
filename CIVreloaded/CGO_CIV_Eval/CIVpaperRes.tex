@@ -1,0 +1,400 @@
+\documentclass{sig-alternate}
+
+
+
+\usepackage{makeidx}
+
+%\newenvironment{titemize}{
+%    \vspace{-.4\baselineskip}
+%    \begin{itemize}
+%    \itemsep -.1\baselineskip
+%}
+%{\end{itemize} \vspace{-.3\baselineskip}}
+%\newcommand{\titem}{\item[$\bullet$]}
+%
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+%\usepackage{amsthm}
+
+\usepackage{multicol}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{subfigure}
+\usepackage{epsfig}
+\usepackage{fancybox}
+\usepackage{fancyvrb}
+
+\usepackage{rotating}
+
+\usepackage{hyperref} % comes last, as it redefines a couple of commands
+\hypersetup{
+    colorlinks,%
+    citecolor=black,%
+    filecolor=black,%
+    linkcolor=black,%
+    urlcolor=blue
+}
+
+\DefineVerbatimEnvironment{colorcode}%
+        {Verbatim}{fontsize=\small,commandchars=\\\{\}}   % \normalsize
+        %{Verbatim}{fontsize=\scriptsize,commandchars=\\\{\}}
+
+
+\definecolor{DikuRed}{RGB}{130,50,32}
+\newcommand{\emp}[1]{\textcolor{DikuRed}{ #1}}
+\definecolor{CosGreen}{RGB}{10,100,70}
+\newcommand{\emphh}[1]{\textcolor{CosGreen}{ #1}}
+
+
+\newcommand{\mymath}[1]{$ #1 $}
+\newcommand{\myindx}[1]{_{#1}}
+\newcommand{\myindu}[1]{^{#1}}
+\newcommand{\mymathbb}[1]{\mathbb{#1}}
+
+
+\hyphenation{in-de-pen-dence}
+\hyphenation{pa-ra-lle-lize}
+\hyphenation{sub-scrip-ted}
+\hyphenation{sub-scrip-ted}
+\pagestyle{plain}
+
+
+\begin{document}
+
+%\conferenceinfo{ICS}{'13 Eugene, Oregon USA}
+
+
+%\title{ Summarizing Accesses Without Closed-Form Solutions in Loop : Beyond Idiom Recognition }   
+\title{CGO'15 ARTIFACT EVALUATION FOR PAPER:\\Scalable Conditional Induction Variables (CIV) Analysis}   
+
+\numberofauthors{2}
+
+\author{
+\alignauthor
+Cosmin E. Oancea\\
+       \affaddr{Department of Computer Science}\\
+       \affaddr{University of Copenhagen}\\
+       \email{cosmin.oancea@diku.dk}
+% 2nd. author
+\alignauthor
+Lawrence Rauchwerger\\
+       \affaddr{Department of Computer Science and Eng.}\\
+       \affaddr{Texas A \& M University}\\
+       \email{rwerger@cs.tamu.edu}
+}
+
+
+\maketitle
+%\thispagestyle{empty}
+
+
+\pagenumbering{arabic}
+
+\begin{abstract}
+
+Subscripts using variables, named {\sc civ}, that cannot be expressed 
+as a formula in terms of the enclosing-loop indices,  
+appear in the low-level implementation of common programming abstractions 
+such as filter operations or stacks or vectors in which elements are 
+inserted at the end, and pose significant challenges to automatic
+parallelization.
+
+This paper presents a flow-sensitive technique that summarizes 
+both {\sc civ}-based and affine subscripts to program level,
+and under the same representation: Our technique (i) requires no 
+modifications of the dependency test, which is agnostic to the 
+original shape of the subscripts, and (ii) may prove useful
+in a wider context, e.g., array {\sc ssa}. 
+%, and may be applied in a wider context, e.g., array {\sc ssa}.
+%
+%On the one hand, our technique does not require modifications of 
+%the dependency test, which is agnostic to the original shape of 
+%the subscripts. 
+In comparison, related work uses specialized dependency tests that 
+%operate at the level of each pair of read-write subscripts, and
+disambiguate each pair of read-write accesses (locally), and 
+have been found less-suited than the summary-based ones in analyzing 
+more complex loops. 
+%than the ones based on summaries.   
+%On the other hand, our technique is not restricted to 
+%dependency tests and may be applied for example in the context 
+%of array {\sc ssa}.
+%
+We report a systematic evaluation of five Fortran benchmarks that demonstrates 
+  (i) efficient (scalable) parallel execution, 
+ (ii) that important loops exhibiting {\sc civ} subscripts are not infrequent, and 
+(iii) that our techniques covers loops that were either not reported or were 
+        previously solved each with a different technique.
+\end{abstract}
+
+
+\category{D.1.3}{Concurrent Programming}{Parallel Programming}
+\category{D.3.4}{Processors}{Compiler}
+
+
+\terms{Performance, Design, Algorithms}
+
+\keywords{
+array-reference summaries, conditional induction variables}
+
+\newpage
+\section{Introduction}
+
+This document instructions for the CGO'15 artifact evaluation for accepted paper: 
+``Scalable Conditional Induction Variables (CIV) Analysis'', by Cosmin E. Oancea 
+and Lawrence Rauchwerger.
+
+{\bf The paper submitted to CGO'15, and this document in pdf and text form
+are available at:}\\ 
+{\tt~~~~http://www.diku.dk/$\sim$zgh600/CGO\_CIV\_Eval.tar.gz}
+\vspace{1ex}
+
+In order to do the actual testing the reviewer is kindly asked to
+log in to machine ... and to follow the instructions in this document.
+
+\section{Requirements}
+
+Our submission assumes a Linux {\tt bash} environment, supporting: 
+{\tt make}, {\tt sed} (stream editor), {\tt gcc}, {\tt g++}, {\tt gfortran} 
+with support for \textsc{OpenMP} directives, i.e., {\tt -fopenmp} compilation flag.
+We have tested our artifacts under several versions of {\tt Ubuntu} and {\tt Suse}, 
+and several versions of {\tt gcc}, e.g., {\tt gcc 4.8.2 (Ubuntu)}, {\tt gcc 4.6.4, gcc 4.7.2 (Suse)}.  
+
+
+\section{Installation in Three Steps}
+
+If not already decompressed, {\em the first step} is to decompress this archive:\\
+$\mbox{ }${\tt~~~~\$ tar zxvf POLARIS\_CGO.tar.gz}\vspace{1ex}
+
+This will create directory {\tt POLARIS} which contains:\\
+$\mbox{ }${\tt~~~~\$ cd POLARIS; ls}\\
+$\mbox{ }${\tt~~~~CGO\_Eval  Makefile  README  setPolarisEnv.sh  trunk}\vspace{1ex}
+
+Folder {\tt trunk} contains our source-to-source Fortran77 compiler,
+a modified version of Polaris research compiler.
+Folder {\tt CGO\_Eval} contains the 6 benchmarks reported in the paper,
+    each corresponding to one of the subfolders: {\tt Bdna}, {\tt Nasa7},
+    {\tt PriceRec}, {\tt PriceInd}, {\tt Track}, {\tt Tree}.
+
+{\em The second step} is to set some of the environment variables
+that are needed to run the compiler and link with runtime 
+libraries, e.g., this will modify {\tt \$PATH} and {\tt \$LD\_LIBRARY\_PATH}:\\
+$\mbox{ }${\tt~~~~POLARIS\$ source setPolarisEnv.sh}\vspace{1ex}
+
+Please test that {\tt \$POLARIS\_ROOT} and {\tt \$POLARIS\_RUNTIME} are set:\\
+$\mbox{ }${\tt~~~~POLARIS\$ echo \$POLARIS\_ROOT; echo \$POLARIS\_RUNTIME}\\
+$\mbox{ }${\tt~~~~path\_to\_POLARIS/trunk}\\
+$\mbox{ }${\tt~~~~path\_to\_POLARIS/trunk/runtime/rtlibs}.\vspace{2ex}
+
+{\em The third step} {\tt~~~~POLARIS\$ make}
+\begin{itemize}
+    \item[1]  builds and installs our compiler (modified Polaris), 
+    \item[2]  compiles the $6$ benchmarks reported in the paper with
+             our source-to-source compiler 
+             which takes sequential Fortran77 code and generates 
+             OpenMP-annotated (parallel) Fortran77 code.
+             {\em It might take 1 hour or longer.}
+    \item[3] compiles the resulted parallel Fortran code
+              with the {\tt gfortran} compiler ({\tt -fopenmp} flag) 
+                and links with the runtime libraries.
+    \item[4] and finally runs the benchmarks.
+\end{itemize}
+
+\section{A Closer Look at the Makefile}
+
+Shows that there are several targets:
+\begin{itemize}
+    \item {\bf \$make polaris} will build our source-to-source compiler.
+          (It is enough to do this step once.)
+
+    \item {\bf \$make ref\_out\_benches} will create the reference output for each benchmark.
+          (It is enough to do this step once.)
+          This is due to the fact that switching the gfortran version and/or hardware
+            may slightly alter results. Since we do not want to complicate matters,
+            e.g., to require installation of SPEC's diff, we choose to validate
+            results against the output of the original Fortran program.
+          Validation simply checks that the output file of the parallel version
+            (and the sequential version with profiling) is identical with
+            the reference output. This holds on all tested configurations.
+          Reference output can be created for each individual benchmark, e.g.,\\
+            $\mbox{ }${\tt~~~~\$ cd CGO\_Eval/Bdna; make ref\_out; cd ../..}
+
+    \item {\bf \$make build\_benches} will compile the $6$ benchmarks reported in the paper
+            with our compiler generating sequential (suffixed by {\tt sp}) and 
+            parallel (suffixed by {\tt ha}) source-code versions that are automatically 
+            instrumented with profiling information.
+            (It is enough to do this step once.) 
+            {\em Note that this step might take about one hour; benchmark 
+            {\tt Track} takes the longest to build: $\sim 45$ minutes}.
+          Benchmarks can be also built individually, e.g.,\\
+             {\tt~~~~\$ cd CGO\_Eval/Bdna; make buildSP; make buildHA; cd ../..}
+
+    \item {\bf \$make run\_ha\_benches} compiles with {\tt gfortran -O3 -fopenmp} and 
+            runs the parallel version of the code. Timing and validation results
+            are generated and can be inspected in folder  
+            {\tt CGO\_Eval/BenchName/TimingRes/}, where {\tt BenchName} is one of the
+            six benchmark names. This is described in detail in (next) Section~\ref{sec:TimeValid}.
+          Benchmarks can be also run individually, e.g.,\\
+             $\mbox{ }${\tt~~~~\$ cd CGO\_Eval/Bdna; make runHA; cd ../..}
+
+    \item {\bf \$make run\_sp\_benches} is similar to {\tt run\_ha\_benches}, but it runs the
+            sequentially profiled version of the code and generates validation and 
+            timing results.
+
+    \item {\bf \$make clean} cleans up {\em everything}: our source-to-source compiler,
+            the generated parallel source-code for each benchmark, and 
+            any other intermediate files that have been produced.
+            Each benchmark can be cleaned individually as well:\\
+            $\mbox{ }${\tt~~~~cd CGO\_Eval/Bdna; make clean; cd ../..}
+\end{itemize}
+
+Finally, runtime results on a different number of processors can be obtained
+by setting manually the {\tt OMP\_NUM\_THREADS} environment variable:\\
+$\mbox{ }${\tt~~~~\$ export OMP\_NUM\_THREADS=2}\\
+\noindent and running the benchmarks again:\\
+$\mbox{ }${\tt~~~~\$ make run\_ha\_benches}\\
+to get the runtime on 2 cores, for example. 
+Note that the previous timing results will be overwritten.
+
+\section{Timing and Validation}
+\label{sec:TimeValid}
+
+Timing and validation results can be consulted in the following files:\\
+$\mbox{ }${\tt~~~~POLARIS\$ ls CGO\_Eval/BenchName/TimingRes/}\\
+$\mbox{ }${\tt~~~~timing\_ha.out  timing\_sp.out  VALID\_ha  VALID\_sp}\\
+\noindent where {\tt BenchName} is one of the becnhmarks reported in the paper:
+{\tt Bdna}, {\tt Nasa7}, {\tt PriceRec}, {\tt PriceInd}, {\tt Track}, {\tt Tree}.
+
+If the execution is valid then {\tt VALID\_ha} or {\tt VALID\_sp} files appear.
+Otherwise, {\tt INVALID\_ha} or {\tt INVALID\_sp} files appear. 
+
+\begin{figure*}[t]
+\begin{colorcode}
+POLARIS\$ more CGO\_Eval/PriceRec/TimingRes/timing\_sp.out
+             Loop name      Category   Count      Time       \%       Granularity
+=================================================================================
+             WHOLE\_PGM   CT:Sequential    1     1.064698   100.00      1.064698
+MONTECARLOPRICING\_do10   CT:Sequential    1     1.064661   100.00      1.064661
+
+
+
+POLARIS\$ more CGO_Eval/PriceRec/TimingRes/timing\_ha.out
+                                 Loop name          Category   Count  Time        \%    Granularity
+========================================================================================================
+                                 WHOLE_PGM        CT:Sequential  1   0.351401   100.00   0.351401
+                    MONTECARLOPRICING_do10     RT:Par/Inspector  1   0.327876    93.31   0.327876
+CIV_COMP_SOBOLACC_MONTECARLOPRICING_DO10_HL  Pass:Insp.Overhead  1   0.023480     6.68   0.023480
+\end{colorcode}
+%\hrule
+\caption{Profiling of the sequential ({\tt timing\_sp.out}) and parallel ({\tt timing\_ha.out}) execution of benchmark {\tt PriceRec} run on some $4$-core machine.}
+\label{fig:ListingHAandSP} %
+\end{figure*}
+
+
+\begin{itemize}
+    \item[SP] Suffix {\tt sp} refers to the sequential version supporting 
+                profiling of the loops specified in\\
+                {\tt CGO\_Eval/BenchName/support/ipa\_framework.loops}\\
+                and reported in the paper, while
+    \item[HA] Suffix {\tt ha} refers to the parallel version of the code with 
+                automatic profiling instrumentation for (i) the orginal (parallelized) 
+                loops, and (ii) for whatever runtime predicates/inspectors were 
+                generated in order to prove parallelism.  The latter are overhead.
+\end{itemize}
+
+For example, Figure~\ref{fig:ListingHAandSP} shows the profiling information
+for the sequential (top) and parallel (bottom) versions of benchmark {\tt PriceRec}:
+\begin{itemize}
+    \item The {\em sequential} benchmark-level runtime is $1.064698$ and loop 
+        {\tt MONTECARLOPRICING\_do10} accounts for $\sim 100\%$ 
+        of the total sequential runtime. 
+
+    \item The {\tt parallel} benchmark-level runtime (on some $4$-core machine) is 
+            $0.351401$, and the parallelized loop takes $\sim 93.31\%$ 
+            of the total paralle runtime. The remaning $6.68\%$ of runtime is used 
+            in inspector\\ {\tt CIV\_COMP\_SOBOLACC\_MONTECARLOPRICING\_DO10\_HL},\\
+            which corresponds to the parallel slice of the original loop that computes the
+            CIV values. The latter is necessary for the parallelization of the original loop,
+            please see paper for more details.
+\end{itemize}
+
+
+
+\section{What is to Verify?}
+
+One can verify
+\begin{itemize}
+    \item[1] That the loops reported in the paper, e.g., Table~$1$ and Figure~$10$, 
+        are recognized as parallel, run in parallel (see speedups w.r.t. sequential 
+        version) and validate.
+
+    \item[2] That the loop-slices that compute the {\sc civ} values, and in general
+                the other runtime tests that enable paralleism, add in most
+        cases negligible overhead with the exception of benchmarks:
+        \begin{itemize}
+            \item  {\tt PriceRec} where overhead is still small $\sim 6.5\%$ of the
+                    total parallel runtime, and
+            \item {\tt Track} where overhead accounts for $\sim 50\%$ of the total
+                parallel runtime.
+        \end{itemize}
+
+    \item[3] That they give good speedup w.r.t. the sequential version. 
+        The results published in the paper were obtained on different machine(s),
+        hence we do not expect the current speedups to be exactly as in the paper.
+        However we expect them to be relatively closed to those:
+        some better, some worse than the ones reported in the paper on 8 cores.
+\end{itemize}
+
+       Note that the bottom-right graph of Figure~$10$ in the paper was obtained
+        on a ``Better-Bandwidth PowerPC P5+'' machine, precisely because on other
+        commodity machines we were dissapopinted with the scalability of {\tt Track}. 
+        Hence the results on the tested configuration might not come close to 
+            the ones reported in the bottom-right graph of Figure~$10$. 
+
+\section{Limitations of the Approach}
+
+{\bf First}, building the parallel (and sequentially profiled) version of the code
+            for benchmarks {\tt PriceInd}  and {\tt PriceRec} requires hand-based
+            modification of the code, mostly because our compiler (Polaris) 
+            does not recognize operators such as {\tt XOR}, {\tt SHIFTL}, {\tt SHIFTR}, etc.
+
+       This was reported in the paper (page 9):
+            ``Because our implementation does not support {\tt XOR}, we have manually 
+                turned the {\tt XOR} into addition before compilation and then back 
+                to {\tt XOR} after compilation.'' 
+        For the purpose of automatic testing we have automated these transformations
+        using {\tt sed} stream editor, in the {\tt make buildSP} and {\tt make buildHA}
+        targets of benchmarks {\tt PriceInd} and {\tt PriceRec}.
+
+{\bf Second}, on some configurations, {\tt make buildHA} gives a segmentation fault
+        on benchmark {\tt Track}, at the final memory deallocation. The parallel
+        version is however produced before it, and {\em everything still works correctly}.
+        We have not been able to find yet the bug, and do not know whether it is ours or not. 
+
+%\acks
+%\vspace*{-1ex}
+\section{Acknowledgements}
+We would like to thank the reviewers for their hard work in verifing these artifacts.
+It is deeply appreciated!
+
+
+
+
+
+%%\bibliographystyle{abbrvnat}
+%\bibliographystyle{abbrv}
+%%\softraggedright
+%\begin{small}
+%\bibliography{CIVpaper}
+%\end{small}
+
+
+\end{document}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% USELESS STUFF %%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
