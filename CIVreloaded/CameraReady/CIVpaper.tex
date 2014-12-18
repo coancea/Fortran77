@@ -70,8 +70,8 @@
            {Department of Computer Science\\University of Copenhagen}
            {cosmin.oancea@diku.dk}
 \authorinfo{Lawrence Rauchwerger}
-           {Department of Computer Science and Eng.\\Texas A \& M University}
-           {rwerger@cs.tamu.edu}
+           {Department of Computer Science and Engineering\\Texas A \& M University}
+           {rwerger@cse.tamu.edu}
 
 
 \maketitle
@@ -275,7 +275,7 @@ the write set of all previous iterations, and, by induction,
 that no distinct iterations write a common element of {\tt a}.
 
 
-Our technique is well integrated % fully implemented and 
+Our technique is well integrated 
 into the \textsc{Parasol} branch of the Polaris~\cite{Blume94automaticdetection} 
 {\tt Fortran} compiler. We  use {\em hybrid analysis} to
 verify dataset-sensitive invariants % (statically-unverifiable)  
@@ -457,8 +457,6 @@ single indexed subscripts~\cite{PaduaDemDrInterproc,VEG} cannot solve
 Similarly, a technique~\cite{CohenBeyondMon} that disambiguates 
 pairs of accesses of shape {\tt \{X(civ),X(civ+CT)\}} may prove the output,
 but {\em not} the flow independence of {\tt CORREC\_do401}. 
-%, but will not prove flow independence. 
-%
 
 
 {\em Second}, summary approximation has been key to successful
@@ -516,11 +514,10 @@ $USR$ & ::= &  $LMAD$                 & ($n$-dim strided intervals)\\
       & {\tt~~}| & $_l\cup_{i=1}^{N} \ USR$ & (full recurrence)\\
       & {\tt~~}| & $_l\cup_{k=1}^{i-1} \ USR$ & (partial recurrence)\\
       & {\tt~~}| & $CallSite \ \bowtie \ USR$ & (callsite translation)
-\end{tabular}%\vspace{-2ex}
+\end{tabular}
 \caption{Unified Set Reference (USR) Grammar.}
 \label{fig:USRgrammar}
 \end{figure}
-%\vspace{1ex}
 
 {\bf USR Construction}~\cite{HybAn}.
 %
@@ -703,7 +700,7 @@ symbols, e.g., any symbol in {\tt CIV}$_{\mu}$'s  {\sc veg}.
 For example, in Figure~\ref{fig:codeActforCorrec}(a), the affine
 subscript of {\tt X(i)}, expressed as {\tt\{i-1\}}, is aggregated across 
 the outer loop as {\tt[M-1,N-1]}, which is independent on {\tt i}. 
-Similarly, we would like to overestimate the write accesses %{\sc civ}  
+Similarly, we would like to overestimate the write accesses   
 across the loop as interval {\tt[civ@1,civ@5-1]} which does
 not depend on loop-variant symbols, such as {\tt civ@3}.
 
@@ -1060,8 +1057,7 @@ The same property holds for the read-write set.
 USR {\bf FREAD}($R$ : USR, $WF^p$ : LMAD) \vspace{1ex} \newline
 $\mbox{ }\mbox{ }$// {\bf {\em Output:}} $R$ filtered-out of $WF^p$ terms. \vspace{1ex} \newline
 $\mbox{ }\mbox{ }$Case $R$ of: \vspace{1ex} \newline
-$\mbox{ }\mbox{ }\mbox{ }\mbox{ }$ LMAD $L$: %\vspace{1ex} \newline
-%$\mbox{ }\mbox{ }\mbox{ }\mbox{ }\mbox{ }\mbox{ }$ 
+$\mbox{ }\mbox{ }\mbox{ }\mbox{ }$ LMAD $L$:  
 {\bf IF} $\mathcal{F}(L - WF^p)$ {\bf THEN} $\emptyset$ {\bf ELSE} $L$ \vspace{1ex} \newline
 $\mbox{ }\mbox{ }\mbox{ }\mbox{ }$ $g\#A$: $g\#${\bf FREAD}($A$,$WF^p$)  \vspace{1ex} \newline   
 $\mbox{ }\mbox{ }\mbox{ }\mbox{ }$ $A \cup B$: {\bf FREAD}($A$,$WF^p$) $\cup$ {\bf FREAD}($B$,$WF^p$) \vspace{1ex} \newline
@@ -1180,7 +1176,8 @@ loop, but in general, they may also use runtime verification.
 
 \enlargethispage{\baselineskip}
 
-\subsection{Privatizing Stack-Like Accesses} % : Beyond Monotonicity 
+% : Beyond Monotonicity 
+\subsection{Privatizing Stack-Like Accesses} 
 \label{sec:Stack}
 
 While we have studied so far the case when the {\sc civ} evolution
@@ -1262,7 +1259,6 @@ denoted {\tt SP}, from which, without loss of generality, the write-first set in
 upper-bound direction, i.e., {\sc wf}{\tt=[SP,$\ldots$]}, and the read set increases 
 in the lower-bound direction, i.e., {\sc r}{\tt=[$\ldots$,SP-1]}, where we 
 have assumed for simplicity the stride to be {\tt 1}.
-%$s$ denotes the interval stride.
 (The other case is treated in a similar fashion.)
 
 With our example, {\sc wf}$_k=${\tt (q.GT.5)\#[civ@2,civ@9-1]}
@@ -1319,22 +1315,20 @@ so far to disambiguating array accesses that exhibit {\sc civ}
 subscripts, but not to the computation of the {\sc civ} values.
 %
 When the {\sc civ} variable is not privatisable in the context of the 
-target loop, e.g., the loop in Figure~\ref{fig:codeActforCorrec}(b), 
-the {\sc civ} is the source of cross-iteration flow dependencies: %in essence 
+target loop, e.g., in Figure~\ref{fig:codeActforCorrec}(a), 
+the {\sc civ} is the source of cross-iteration flow dependencies: 
 it is always updated in reduction-like statements, e.g., {\tt civ=civ+3*C(i)},
 but it is read in arbitrary statements, e.g., in a subscript.
 
-
-%While not always necessary~\cite{PaduaStackArr}, we  (pre)compute in %always 
 While related approaches~\cite{PaduaDemDrInterproc,VEG} avoid this, we always pre-compute in
 parallel, prior to loop execution, the {\sc civ}$_\mu$ values at the beginning 
 of each (chunk of) iteration(s).
-Reasons are threefold: {\em First}, in most cases %it is cleaner to do so, and 
+Reasons are threefold: {\em First}, in most cases 
 the runtime overhead is small. {\em Second}, the {\sc civ} values may dictate
 whether the loop is independent or not: For example,  the flow-independence
-predicate of the loop in Figure~\ref{fig:codeActforCorrec}(b), 
+predicate of the loop in Figure~\ref{fig:codeActforCorrec}(a), 
 ${\tt N} \le {\tt Q}~\vee~{\tt civ@5} < {\tt M}$,
-depends on {\tt civ@5}, while resolving statically the output 
+depends on {\tt civ@5}, and resolving statically the output 
 dependencies of {\tt EXTEND\_do400}, depends, as
 per Section~\ref{subsec:Track}, on establishing whether the last
 iteration has increased the {\sc civ} value. 
@@ -1356,7 +1350,8 @@ and similarly, the end-of-iteration value minus {\tt Q} is saved into array
 {\tt CIVS}.  
 
 
-\begin{figure}
+\begin{figure*}
+\begin{minipage}{1.0\columnwidth}
 \begin{colorcode}
 //\mymath{slice for computing partial civ values}
 DOALL i = M, N, 1      \$PRIVATIZED(civ,i)
@@ -1365,7 +1360,7 @@ DOALL i = M, N, 1      \$PRIVATIZED(civ,i)
   CIVS(i-M+1) = civ - Q
 ENDDOALL
 
-//\mymath{SCAN(op {\tt{}+}, e, n, {\tt{}X}) \equiv} \{\mymath{e}, \mymath{e}+X(1),.., \mymath{e}+X(1)+..+X(n)\}
+//\mymath{SCAN(op{\tt{}+},e,n,{\tt{}X})\equiv}\{\mymath{e},\mymath{e}+X(1),..,\mymath{e}+X(1)+..+X(n)\}
 SCAN(op +, Q, N-M+1, CIVS)
 
 //\mymath{civ values are plugged in the loop} 
@@ -1373,77 +1368,11 @@ DOALL i = M, N, 1      \$PRIVATIZED(civ,i)
   civ = CIVS(i-M+1)
   ... \mymath{rest of the loop code} 
 ENDDOALL
+                (a)
 \end{colorcode}
-\vspace{-1ex}
-\caption{ Parallel Computation of {\sc civ}$_\mu$ Values.}
-\label{fig:CivSlice} %
-\end{figure}
-
-For example, Figure~\ref{fig:CivSlice} shows the {\sc civ} slice of the loop
-in Figure~\ref{fig:codeActforCorrec}(a), where scalars {\tt i} and {\tt civ}
-were privatized. The slice computes the per-iteration {\sc civ} increments 
-and records them in {\tt CIVS}. Then {\tt SCAN}
-computes in parallel the prefix sum of the {\tt CIVS} values, 
-which are used each by one iteration of the parallelized loop.
-%hence the {\sc civ}$_\mu$ values at the beginning of each iteration
+\end{minipage}
 %
-Correctness requirements are {\em twofold}:  
-
-{\em First}, all symbols that appear in the slice have been already proven 
-to not introduce cross-iteration dependencies in the original loop; otherwise 
-the computation of the slice might violate the semantics of the sequential execution. 
-
-{\em Second}, {\sc civ} variables may appear in the slice only in reduction-like statements, 
-such as {\tt civ=civ+1}.
-If this holds than the final {\sc civ} value would correspond to an (additive) reduction, 
-and hence, the intermediate {\sc civ}$_\mu$ values are safely computed via the parallel 
-prefix sum of the values in {\tt CIVS}. 
-
-If the latter does not hold, %than we are inside a vicious circle:
-%the {\sc civ} computation depends on the {\sc civ} values 
-%that we are about to compute. 
-then we have a cycle between {\sc civ}-value computation and their use.   
-We address such a case via a fixed-point implementation,
-which (i) optimistically computes the {\sc civ} values as before, and then (ii) logically 
-re-executes the slice on the computed-{\sc civ} values and checks (in parallel) 
-whether the resulted value matches the input-value of the next iteration. 
-%
-If the check succeeds across all iterations, one can prove correctness by induction:
-The first iteration is always correct. If the value at the end of the first iteration 
-coincides with the input of the second, then the second iteration 
-is correct, etc.%guaranteed to be correct, and so on.   
-
-%We observe that the fix-pointed verification could be integrated in the 
-%(parallel, optimistic) execution of the original loop: Rather than running the slice twice,
-%we run the loop in a copy-in, copy-out policy, and if the verification fails then, 
-%instead of copying-out the result arrays, the loop is re-executed sequentially.
-
-Finally, {\sc civ}$_\mu$ input values are plugged in the 
-parallel execution of the original loop: The arrays that were proven flow and output
-independent are shared, i.e., not privatized.   For cases such as {\tt EXTEND\_do400},
-that exhibit the special pattern of output dependencies, we adopt a strategy similar
-to the one used for {\sc civ} computation: arrays such as {\tt X} are privatized,
-their read-set {\sc ro}$_i$ $\cup$ {\sc rw}$_i$ is copied in, and the per-iteration 
-{\sc wf} underestimate
-is copied-out at the iteration's end.   Our technique is deeply integrated with the
-underlying compiler framework: On the one hand, $\mathcal{F}$ uses the {\sc civ}-summarized
-over and underestimates to derive sufficient-independence predicates.
-%
-On the other hand $\mathcal{F}$ is used in the summarization process, for example 
-to simplify the {\sc ro}/{\sc rw} per-iteration sets, and thus to optimize the 
-size of the data that needs to be copied in.  Similarly, Fourier-Motzkin-like
-elimination reduces both loop indices and {\sc civ}s, i.e., when {\sc civ}'s 
-bounds are derivable from its {\sc veg}. %in its corresponding {\sc veg}.
-
-
-
-\section{Experimental Evaluation}
-\label{sec:EmpEval}
-
-%\begin{figure}
-
-\begin{table}[t] 
-\begin{minipage}{0.9\columnwidth}
+\begin{minipage}{1.02\columnwidth}
 \centering
 \scriptsize   
 \begin{tabular}{|c|l|l|c|c|l|} \hline
@@ -1462,22 +1391,91 @@ bounds are derivable from its {\sc veg}. %in its corresponding {\sc veg}.
 {\sc price\_i} &  T$_{P/S}$=.29/2.0 s        & {\sc price\_i\_10} & 99   & .29/2.0  & {\sc civ}$_{\tt{}AGG}$ \\ 
 {\tt P=8}          &  {\sc sc}=99\%,{\sc ov}=0\% &                    &      &          &                           \\ \hline 
 {\sc price\_r} &  T$_{P/S}$=.17/.98 s          & {\sc price\_r\_10}& 99   & .17/.98  & {\sc civ}$_{\tt{}COMP}$ \\ 
+
 {\tt P=8}          &  {\sc sc}=99\%,{\sc ov}=6.4\% &                  &      &          &                          \\ \hline 
 \end{tabular}
+\begin{colorcode}
+
+                        (b)
+\end{colorcode}
 \end{minipage}
-\caption{ Characterization of Important CIV Loops.}
-\label{tab:LoopBenchProps}
-\end{table}
+\caption{ (a) Parallel Computation of {\sc civ}$_\mu$ Values.     (b) Characterization of Important CIV Loops.}
+\label{fig:CivSlice} %
+\end{figure*}
 
-
-We evaluate our technique on a number of benchmarks containing loops that cover a significant
-fraction of the total sequential runtime and that exhibit {\sc civ}-based accesses.
+%For example, 
+Figure~\ref{fig:CivSlice}(a) shows the {\sc civ} slice of the loop
+in Figure~\ref{fig:codeActforCorrec}(a), where scalars {\tt i} and {\tt civ}
+were privatized. The slice computes the per-iteration {\sc civ} increments 
+and records them in {\tt CIVS}. Then {\tt SCAN}
+computes in parallel the prefix sum of the {\tt CIVS} values, 
+which are used each by one iteration of the parallelized loop.
 %
-Table~\ref{tab:LoopBenchProps} characterizes several representative loops, named in 
+Correctness requirements are {\em twofold}:  
+
+{\em First}, all symbols that appear in the slice have been already proven 
+to not introduce cross-iteration dependencies in the original loop; otherwise 
+the computation of the slice might violate the semantics of the sequential execution. 
+
+{\em Second}, {\sc civ} variables may appear in the slice only in reduction-like statements, 
+such as {\tt civ=civ+1}.
+If this holds than the final {\sc civ} value would correspond to an (additive) reduction, 
+and hence, the intermediate {\sc civ}$_\mu$ values are safely computed via the parallel 
+prefix sum of the values in {\tt CIVS}. 
+
+If the latter does not hold,  
+then we have a cycle between {\sc civ}-value computation and their use.   
+We address such a case via a fixed-point implementation,
+which (i) optimistically computes the {\sc civ} values as before, and then (ii) logically 
+re-executes the slice on the computed-{\sc civ} values and checks (in parallel) 
+whether the resulted value matches the input-value of the next iteration. 
+%
+If the check succeeds across all iterations, one can prove correctness by induction:
+The first iteration is always correct. If the value at the end of the first iteration 
+coincides with the input of the second, then the second iteration 
+is correct, etc.  
+
+\enlargethispage{\baselineskip}
+
+Finally, {\sc civ}$_\mu$ input values are plugged in the 
+parallel execution of the original loop: The arrays that were proven flow and output
+independent are shared, i.e., not privatized.   For cases such as {\tt EXTEND\_do400},
+that exhibit the special pattern of output dependencies, we adopt a strategy similar
+to the one used for {\sc civ} computation: arrays such as {\tt X} are privatized,
+their read-set {\sc ro}$_i$ $\cup$ {\sc rw}$_i$ is copied in, and the per-iteration 
+{\sc wf} underestimate
+is copied-out at the iteration's end.   Our technique is deeply integrated with the
+underlying compiler framework: On the one hand, $\mathcal{F}$ uses the {\sc civ}-summarized
+over and underestimates to derive sufficient-independence predicates.
+%
+On the other hand $\mathcal{F}$ is used in the summarization process, for example 
+to simplify the {\sc ro}/{\sc rw} per-iteration sets, and thus to optimize the 
+size of the data that needs to be copied in.  Similarly, Fourier-Motzkin-like
+elimination reduces both loop indices and {\sc civ}s, i.e., when {\sc civ}'s 
+bounds are derivable from its {\sc veg}.
+
+
+
+\section{Experimental Evaluation}
+\label{sec:EmpEval}
+
+While we have analyzed~\cite{CosPLDI} more than two thousand loops from about thirty 
+benchmarks ({\sc spec}, {\sc PerfectClub} and more recent ones~\cite{LexiFiPricing}), 
+this section reports only five benchmarks in which our {\sc civ} analysis was crucial 
+for efficient benchmark-level parallelization: we consider only 
+{\sc civ} loops that have a significant global coverage and belong to the most
+beneficial schedule of parallelized loops.   However, the number
+of loops exhibiting {\sc civ} subscripts is much larger, and we believe
+it is significant that $17\%$ (5 out of 30) of the analyzed benchmarks contain 
+essential {\sc civ} loops. 
+
+%We evaluate our technique on a number of benchmarks containing loops that cover a significant
+%fraction of the total sequential runtime and that exhibit {\sc civ}-based accesses.
+%
+Figure~\ref{fig:CivSlice}(b) characterizes several representative loops, named in 
 the third column, and their corresponding benchmarks, named in the first column.
 The reported parallel runtime were measured on {\tt P=8} cores.
-%
-%The last column shows the number of cores used for parallel execution. 
+
 
 The second column shows 
 (i)   the parallel and sequential runtime, T$_{P/S}$, measured in seconds,
@@ -1488,46 +1486,23 @@ The second column shows
         denoted {\sc civ}$_{\tt{}COMP}$, and presented in Section~\ref{subsect:CivImplem}.   
 
 
-%%% orig .37\textwidth  35ex
-%\begin{figure*}[t]
-%	\begin{tabular}{c c c} 
-%\multicolumn{2}{}{} 
-%	\multirow{2}{*}[37ex]
-%	{      		%\hspace{-6ex}	
-%               \includegraphics[width=.40\textwidth]{Figures/EmpRes/BenchParRes}\vspace{2ex}
-%	} & { \hspace{-55ex}
-%                    \includegraphics[width=.40\textwidth]{Figures/EmpRes/LoopParRes} \vspace{2ex}
-%	} \\ 
-%	\multirow{2}{*}[35ex]
-%	{           
- %               \includegraphics[width=.40\textwidth]{Figures/EmpRes/LoopScalRes}
-%	} & { \hspace{16ex}
-%                \includegraphics[width=.40\textwidth]{Figures/EmpRes/TrackScal}
-%	}
-%\end{tabular} 
-%\hrule
-%\caption{ Benchmark and Loop-Level Normalized (Total) Parallel Runtime. Sequential Runtime is 1.}
-%\label{fig:ParRuntime} %
-%\end{figure*}
-
-
 \begin{figure*}[t] 
 \begin{minipage}{1.2\columnwidth}
-    \includegraphics[width=0.7\textwidth]{\Figures/EmpRes/BenchParRes} 
+    \includegraphics[width=0.55\textwidth]{\Figures/EmpRes/BenchParRes} 
 
       {\bf~~~~~~~~~~~~~~~~~~~~~~~~~~~~~(a)} \vspace{2ex}
 
-    \includegraphics[width=0.7\textwidth]{\Figures/EmpRes/LoopScalRes}
+    \includegraphics[width=0.55\textwidth]{\Figures/EmpRes/LoopScalRes}
       
       {\bf~~~~~~~~~~~~~~~~~~~~~~~~~~~~~(c)}\vspace{1ex}
 
 \end{minipage}
 \begin{minipage}{0.9\columnwidth}
-    \includegraphics[width=0.9\textwidth]{\Figures/EmpRes/LoopParRes} 
+    \includegraphics[width=0.75\textwidth]{\Figures/EmpRes/LoopParRes} 
 
       {\bf~~~~~~~~~~~~~~~~~~~~~~~~~~~~~(b)}\vspace{2ex}
 
-   \includegraphics[width=0.9\textwidth]{\Figures/EmpRes/TrackScal}
+   \includegraphics[width=0.75\textwidth]{\Figures/EmpRes/TrackScal}
       
       {\bf~~~~~~~~~~~~~~~~~~~~~~~~~~~~~(d)}\vspace{1ex}
 
@@ -1545,7 +1520,6 @@ We note that benchmarks {\tt bdna} and {\tt nasa7} have poor scalability, e.g., 
 performance gain from four to eight-core execution, because they exhibit
 small (historical) datasets: low-granularity important loops that limits the 
 profitability of parallelization.
-%, which belong to the {\sc perfect-club} and {\sc spec2000} suites,
 In addition, (i) loop {\tt GMTTST\_do120} 
 is parallel but has loop-count three, and (ii) loop {\tt RESTAR\_do15},
 which covers $9.3\%$ of the sequential runtime, uses {\sc io} operations,
@@ -1560,20 +1534,19 @@ at runtime, i.e., {\sc civ} was not privatizable.  {\sc st-par} indicates static
 parallelization of a ``regular'' loop. 
 
 
-
-
-\enlargethispage{\baselineskip}
 \vspace{1ex}
 
 {\bf Our Test Suite} consists of benchmarks {\tt bdna} and {\tt track} 
-from {\sc perfect-club} suite, whose loops have been already discussed;
+from {\sc perfect-club} suite: (i) {\tt ACTFOR\_do240} is a {\sc civ} loop
+that uses a vector in which elements are inserted at the end, and
+both the {\sc civ} and the vector array can be privatized, (ii) 
 loop {\tt FPTRAK\_do300} from {\tt track} is similar to {\tt EXTEND\_do400},
-%in Figure~\ref{fig:EXTEND}, 
 and loop {\tt CORREC\_do401} is not shown because 
 its sequential coverage is under $1\%$. 
 %
 Benchmark {\tt nasa7} is part of {\sc spec2000} suite, and its loop {\tt EMIT\_do5}
-is similar to the one in Figure~\ref{fig:codeActforCorrec}(b).
+is similar to {\tt ACTFOR\_do240} except that output and flow independence 
+is proven with runtime predicates, and it also requires precomputation of {\sc civ} values.
 %
 Benchmark {\tt tree}~\cite{Treecode} is an implementation of the Barnes-Hut algorithm.
 Its main loop, {\tt ACCEL\_do10}, exhibits the stack-access pattern of Figure~\ref{fig:Tree}(a),
@@ -1584,56 +1557,27 @@ Finally,  {\tt price\_i/r} is a (simplified) kernel of a real-world application 
 computes the price of a financial contract~\cite{LexiFiPricing}:   The difference
 between the two versions is that (i) {\tt price\_i} uses an independent Sobol-random-number-generator
 algorithm, i.e., computing the $i^{th}$ random number requires only the value of $i$,
-and exhibits the {\sc civ} pattern of Figure~\ref{fig:codeActforCorrec}(a), 
+and exhibits a {\sc civ} pattern similar with {\tt ACTFOR\_do240}, 
 while (ii) {\tt price\_r} uses a faster, recurrent formula that computes the 
 $i^{th}$ random number based on the previous $(i-1)^{th}$ one. 
 This means that in {\tt price\_r} the {\sc civ} is not used for indexing
-but directly in the computation of Sobol numbers, i.e., a prallel prefix 
+but directly in the computation of Sobol numbers, i.e., a parallel prefix 
 scan with exclusive-or operator {\tt xor}. 
 Parallelization of {\tt price\_r} consists of (pre)computing
 in parallel these {\sc civ}$_\mu$ values, in the manner of 
-Section~\ref{subsect:CivImplem}.  
+Section~\ref{subsect:CivImplem}.   
 %
 Because our implementation does not support {\tt xor},
 we have manually turned the {\tt xor} into addition before 
 compilation and then back to {\tt xor} after compilation. 
 
-%\begin{figure}[t]
-%	\begin{tabular}{l l l} 
-%\multicolumn{2}{}{} 
-%	\multirow{2}{*}[24ex]
-%	{      		\hspace{-6ex}	
-%                \includegraphics[width=.27\textwidth]{Figures/EmpRes/BenchParRes} \vspace{2ex}     
-%	} & { \hspace{-39ex}
-%                    \includegraphics[width=.27\textwidth]{Figures/EmpRes/LoopParRes} \vspace{2ex}
-%	} \\ 
-%	\multirow{2}{*}[24ex]
-%	{           \hspace{-7ex} 
-%                \includegraphics[width=.27\textwidth]{Figures/EmpRes/LoopScalRes}
-%	} & {       \hspace{-5ex} 
-%                \includegraphics[width=.25\textwidth]{Figures/EmpRes/TrackScalNew}
-%	}
-%\end{tabular}
-%\caption{ Benchmark and Loop-Level Normalized Runtime and Scalability Results. }
-%\label{fig:ParRuntime} %
-%\end{figure}
-
-
-
-%\vspace{1ex}
-
+\vspace{1ex}
 
 {\bf Experimental Methodology.} Our source-to-source compiler receives as
 input a sequential {\tt Fortran77} program and automatically analysis loop-level 
 parallelism and produces {\tt OpenMP} code.  The sequential and parallel 
 code were compiled with {\tt gfortran}, option {\tt -O3}, and were run on 
 a $16$-core {\tt AMD Opteron(TM) 6274} system with $128${\tt GB} memory. 
-%Results were averaged for three independent runs.
-%
-%(-O4) and tested against IBM’s xlf compiler version
-%13 on a 8 dual-core POWER 5+@1.9GHz, 32Gb-memory machine.
-
-\enlargethispage{\baselineskip}
 
 \vspace{1ex}
 
@@ -1641,16 +1585,10 @@ a $16$-core {\tt AMD Opteron(TM) 6274} system with $128${\tt GB} memory.
 the normalized-parallel runtime for each entire benchmark 
 and {\sc civ} loop, respectively, where the {\sc civ}-computation
 overhead is included in each bar.
-%  where bars with names ending 
-%in {\tt \_OV} show separately (only) the (non-negligible) runtime overhead of 
-%(pre)computing the {\sc civ}s. 
-%Note that the {\sc civ}-(pre)computation overhead is included
-%for in the corresponding benchmark/loop bar.
 %
-Table~\ref{tab:LoopBenchProps} has shown that the {\sc civ}-computation slice 
+Figure~\ref{fig:CivSlice}(b) has shown that the {\sc civ}-computation slice 
 (i) represents a small fraction $6\%$ of the execution of the 
 {\tt pric\_r} benchmark,
-%loop for {\tt PRICE\_R\_do10}, 
 but (ii) it accounts for $45\%$ of the parallel execution time for {\tt track}.
 The latter case is not surprising since the slice contains almost all statements 
 of the original loop, i.e., {\tt EXTEND\_do400} and {\tt FPTRACK\_do300}, 
@@ -1665,41 +1603,34 @@ e.g., {\tt ACCEL\_do10} shows a  $7.1$x speedup on eight cores. % healthy
 
 The loop-level scalability results of Figure~\ref{fig:ParRuntime}(c) 
 hint that memory bandwidth is the main limitation. 
-%For example, {\tt track}'s loops, overheads included, seem to scale well up to four cores,
-%not so well on eight, and poor on sixteen. %(and its overhead has a similar behavior).
-%The other-loops scalability is affected when passing from eight to sixteen
-%cores, e.g., {\tt ACCEL\_do10} shows (only) $11$x speedup on sixteen cores.
-%%, in comparison to $7.1$x on eight.
-
-%(-O4) and tested against IBM’s xlf compiler version
-%13 on a 8 dual-core POWER 5+@1.9GHz, 32Gb-memory machine.
-To check this hypothesis we run {\sc track}, the most complex benchmark in our suite, 
+%
+To check this hypothesis we run {\tt track}, the most complex benchmark in our suite, 
 on a bandwidth-friendlier system: an eight dual-core {\tt POWER 5+@1.9GHz} with $32$GB memory. 
 The results, depicted in Figure~\ref{fig:ParRuntime}(d) show 
 significantly-improved scalability up to sixteen cores for the 
 total runtime. 
-The {\sc civ}-computation overheads, also depicted in the chart, scales equally well.  
-%and 
-%the {\sc civ}-computation overhead of {\tt track}.
+The {\sc civ}-computation overheads, also depicted, scale equally well.  
  
 In summary, on eight processors we report an average benchmark-level
 speedup of $4.33\times$, and an average {\sc civ}-loop speedup of $5.12\times$. 
 The highest observed speedup, corresponding to {\tt price\_i}, is $12.5$x 
 on sixteen cores.
 
-
-\section{Related Work} 
+ 
+\section{Related Work}  
 \label{sec:RelWork}
 
-Classical loop analysis examines each pair of read/write accesses, % dependence each
+Classical loop analysis examines each pair of read/write accesses, 
 and models dependencies into linear systems of (in)equations that are solved
-statically  via Gaussian-like elimination~\cite{BanerjeeIneqTest,FeautrierDataflow}. %Pugh92theomega
+statically  via Gaussian-like elimination~\cite{BanerjeeIneqTest,FeautrierDataflow}. 
 Such analysis  can drive powerful code transformations to optimize 
 parallelism~\cite{PolyhedralOpt}, albeit in the narrow(er) domain 
 in which subscripts, loop bounds, {\tt if} conditions are affine 
-expressions of loop indices.
+expressions of loop indices. At the opposite end of the spectrum 
+are entirely-dynamic techniques~\cite{LRPD,OanceaSetCongrDynAn}, 
+which parallelize aggressively, but at the cost of significant runtime overhead.
 
-Several techniques have been proposed to handle irregular subscripts that have
+Several static techniques have been proposed to handle irregular subscripts that have
 the shape of closed-form formulas in the loop indices. For example, 
 The Range Test~\cite{Blume94RangeTest} uses symbolic 
 ranges to disambiguate a class of quadratic and  
@@ -1714,7 +1645,7 @@ uninterpreted functions~\cite{Pugh98NonlinPresb}, and the irreducible-result
 formula is executed at runtime to disambiguate a class of irregular
 accesses. 
 
-A different type of approach, which was found more effective in
+A different type of approach, found more effective in
 solving larger loops, is to encode loop independence into one equation 
 on abstract sets, for each array. The abstract set models the
 memory references of the corresponding array and is computed 
@@ -1725,11 +1656,12 @@ none of them handles {\sc civ}-subscripted loops,
 such as the ones analyzed in this paper.
 %
 
+\enlargethispage{\baselineskip}
+
 A related  body of work presents (i) symbolic-algebra systems that, for example,  
 compute upper and lower bounds of nonlinear expressions~\cite{Fahringer97EffSymb},
 and (ii) techniques to characterizes scalar-value monotonicity within a 
 loop~\cite{VEG,MonStmt}.
-%, and (iii) generalized formulations of induction variables~\cite{Engelen04aunified}.
 
 This solves only half of the problem, which   
 corresponds to establishing the monotonic properties of {\sc civ}s.
@@ -1748,12 +1680,12 @@ and the other uses {\sc civ}s, i.e., it might prove output, but not
 flow independence for the loop in Figure~\ref{fig:codeActforCorrec}(a), 
 and it will not solve {\sc track}. 
 
-Enhancing the idiom-recognition support~\cite{PaduaDemDrInterproc} %PaduaStackArr,
+Enhancing the idiom-recognition support~\cite{PaduaDemDrInterproc} 
 allows to relate better the {\sc civ} properties with the dependency test: 
 For example, when the written {\sc civ} subscript matches the pattern 
 of a consecutively-written single-index ({\sc cw-si}) array, it is often
 possible to apply privatization, e.g., loop {\tt ACTFOR\_do240} in {\tt bdna}
-and the stack access in Figure~\ref{fig:Tree}(a). %falls into a similar pattern.
+and the stack access in Figure~\ref{fig:Tree}(a). 
 %
 However, loops such as the one in Figure~\ref{fig:codeActforCorrec}(a),
 or {\sc track}, are unanalyzable because the subscripts are neither single 
@@ -1765,7 +1697,6 @@ the code does not fall, strictly speaking, within that idiom.
 Furthermore, other than {\sc veg}, our analysis does not rely
 on pattern matching, but discovers non-trivial invariants that
 enable the {\sc civ}-agnostic test either (i) to prove loop independence,
-%e.g., Figure~\ref{fig:codeActforCorrec}(b), 
 or (ii) to be tuned in a manner that resolves a specific pattern 
 of dependencies, e.g., {\sc track}.
 
@@ -1776,20 +1707,15 @@ do not mix: they are summarized under different representations,
 and disambiguated via specialized dependency tests.
 Analysis builds only accurate summaries, which may restrict the
 effectiveness of dependency tests. 
-%are identified through a {\sc cw-si}-like heuristic.
 More specifically, there are not reported:
   (i)   symbolic, non-constant {\sc civ} evolutions,
-        e.g., Fig~\ref{fig:codeActforCorrec}(b),
+        e.g., Figure~\ref{fig:codeActforCorrec}(b),
  (ii) the complex output-dependency pattern of {\sc track},
 (iii) extraction of runtime predicates for {\sc civ}-dependence tests,
  (iv) prefix-sum precomputation of {\sc civ} values, in the
         cases when they are used as data, rather than for indexing,
   (v) privatization of stack-like accesses, 
  (vi) runtime and scalability results.
-
-%Finally, four-core speedups for the {\sc civ} loops of {\tt bdna} and 
-%{\tt track} benchmarks are reported in~\cite{CosPLDI}, but the technique 
-%by which these {\sc civ} loops have been analyzed is not explained. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1814,16 +1740,18 @@ techniques to aggressively parallelize loops, and have
 demonstrated the viability of the approach via a systematic
 evaluation of five real-world applications.
 
+   
 
-
-%\section*{Acknowledgement}
-\acks
-
+%\section*{Acknowledgement}  
+\acks 
+   
 This work was supported in part by
-the Danish Strategic Research Council, Program Committee for Strategic Growth
-Technologies, for the research center 'HIPERFIT: Functional High
-Performance Computing for Financial Information Technology'
-(\url{http://hiperfit.dk}) under contract number 10-092299,
+the Danish Council for Strategic Research under contract 10-092299 (HIPERFIT, \url{http://hiperfit.dk}), 
+%number
+%the Danish Strategic Research Council, Program Committee for Strategic Growth
+%Technologies, for the research center 'HIPERFIT: Functional High
+%Performance Computing for Financial Information Technology'
+%(\url{http://hiperfit.dk}) under contract number 10-092299,
 %%%%
 and by 
 NSF awards
@@ -1849,17 +1777,161 @@ by Award KUS-C1-016-04, made by King Abdullah University of Science and Technolo
 
 
 
-%\bibliographystyle{abbrvnat}
-\bibliographystyle{abbrv}
-%\softraggedright
+\bibliographystyle{abbrvnat}
 
-%\begin{small}
+\begin{thebibliography}{}
+\softraggedright
 
-\bibliography{CIVpaper}
+\bibitem{BanerjeeIneqTest}
+U.~Banerjee.
+\newblock Speedup of {O}rdinary {P}rograms.
+\newblock {\em Ph.D. Thesis, Dept. of Comp. Sci. Univ. of Illinois at
+  Urbana-Champaign}, Report No. 79-989, 1988.
 
-%\end{small}
+\bibitem{segScan}
+G.~E. Blelloch.
+\newblock {S}cans as {P}rimitive {P}arallel {O}perations.
+\newblock {\em Computers, IEEE Transactions}, 38(11):1526--1538, 1989.
 
+\bibitem{Blume94RangeTest}
+W.~Blume and R.~Eigenmann.
+\newblock The {R}ange {T}est: {A} {D}ependence {T}est for {S}ymbolic,
+  {N}on-{L}inear {E}xpressions.
+\newblock In {\em Procs. Int. Conf. on Supercomp}, pages 528--537, 1994.
 
+\bibitem{Blume94automaticdetection}
+W.~Blume, R.~Eigenmann, J.~Hoeflinger, D.~Padua, P.~Petersen, L.~Rauchwerger,
+  and P.~Tu.
+\newblock Automatic detection of parallelism: A grand challenge for
+  high-performance computing.
+\newblock {\em IEEE Parallel and Distributed Technology}, 2, 1994.
+
+\bibitem{Treecode}
+J.~Edward.
+\newblock http://www.ifa.hawaii.edu/~barnes/ftp/treecode/.
+\newblock Technical report.
+
+\bibitem{Fahringer97EffSymb}
+T.~Fahringer.
+\newblock Efficient symbolic analysis for parallelizing compilers and
+  performance estimators.
+\newblock {\em Journal of Supercomputing}, 12:227--252, 1997.
+
+\bibitem{FeautrierDataflow}
+P.~Feautrier.
+\newblock {D}ataflow {A}nalysis of {A}rray and {S}calar {R}eferences.
+\newblock {\em Int. Journal of Parallel Program.}, 20(1):23--54, 1991.
+
+\bibitem{SeqVars}
+M.~P. Gerlek, E.~Stoltz, and M.~Wolfe.
+\newblock Beyond {I}nduction {V}ariables: {D}etecting and {C}lassifying
+  {S}equences {U}sing a {D}emand-{D}riven {SSA} {F}orm.
+\newblock {\em ACM Transactions on Programming Languages and Systems (TOPLAS)},
+  17:85--122, 1995.
+
+\bibitem{SUIF}
+M.~W. Hall, S.~P. Amarasinghe, B.~R. Murphy, S.-W. Liao, and M.~S. Lam.
+\newblock Interprocedural {P}arallelization {A}nalysis in {SUIF}.
+\newblock {\em ACM Transactions on Programming Languages and Systems (TOPLAS)},
+  27(4):662--731, 2005.
+
+\bibitem{PaduaDemDrInterproc}
+Y.~Lin and D.~Padua.
+\newblock Compiler {A}nalysis of {I}rregular {M}emory {A}ccesses.
+\newblock In {\em Int. Prg. Lang. Design Implem. (PLDI)}, pages 157--168, 2000.
+
+\bibitem{Moon99PredArrDataFlow}
+S.~Moon and M.~W. Hall.
+\newblock Evaluation of {P}redicated {A}rray {D}ata-{F}low {A}nalysis for
+  {A}utomatic {P}arallelization.
+\newblock In {\em Princ.~Pract.~of~Par.~Prog. PPoPP}, pages 84--95, 1999.
+
+\bibitem{LexiFiPricing}
+C.~Oancea, C.~Andreetta, J.~Berthold, A.~Frisch, and F.~Henglein.
+\newblock Financial {S}oftware on {GPU}s: between {H}askell and {F}ortran.
+\newblock In {\em Funct. High-Perf. Comp. (FHPC)}, pages 61--72, 2012.
+
+\bibitem{OanceaSetCongrDynAn}
+C.~E. Oancea and A.~Mycroft.
+\newblock Set-{C}ongruence {D}ynamic {A}nalysis for {S}oftware {T}hread-{L}evel
+  {S}peculation.
+\newblock In {\em Lang. Comp. Par. Comp. (LCPC)}, pages 156--171. Springer,
+  2008.
+
+\bibitem{CosPLDI}
+C.~E. Oancea and L.~Rauchwerger.
+\newblock Logical {I}nference {T}echniques for {L}oop {P}arallelization.
+\newblock In {\em ACM Int. Conf. Prog. Lang. Design and Implem. (PLDI)}, pages
+  509--520, 2012.
+
+\bibitem{SummaryMonot}
+C.~E. Oancea and L.~Rauchwerger.
+\newblock A {H}ybrid {A}pproach to {P}roving {M}emory {R}eference
+  {M}onotonicity.
+\newblock In {\em Int. Lang. Comp. Par. Comp. (LCPC)}, pages 61--75. Springer,
+  2013.
+
+\bibitem{LMAD}
+Y.~Paek, J.~Hoeflinger, and D.~Padua.
+\newblock Efficient and {P}recise {A}rray {A}ccess {A}nalysis.
+\newblock {\em ACM Transactions on Programming Languages and Systems},
+  24(1):65--109, 2002.
+
+\bibitem{PolyhedralOpt}
+L.-N. Pouchet and et~al.
+\newblock Loop {T}ransformations: {C}onvexity, {P}runing and {O}ptimization.
+\newblock In {\em Int. Conf. Princ. of Prog. Lang. (POPL)}, pages 549--562,
+  2011.
+
+\bibitem{Pugh92theomega}
+W.~Pugh.
+\newblock {T}he {O}mega {T}est: a {F}ast and {P}ractical {I}nteger
+  {P}rogramming {A}lgorithm for {D}ependence {A}nalysis.
+\newblock {\em Communications of the ACM}, 8:4--13, 1992.
+
+\bibitem{Pugh98NonlinPresb}
+W.~Pugh and D.~Wonnacott.
+\newblock Constraint-{B}ased {A}rray {D}ependence {A}nalysis.
+\newblock {\em Trans. on Prog. Lang. and Sys. (TOPLAS)}, 20(3):635--678, 1998.
+
+\bibitem{LRPD}
+L.~Rauchwerger and D.~Padua.
+\newblock The {LRPD} {T}est: {S}peculative {R}un-{T}ime {P}arallelization of
+  {L}oops with {P}rivatization and {R}eduction {P}arallelization.
+\newblock {\em IEEE Trans. on Parallel and Distributed System}, 10(2):160--199,
+  Feb 1999.
+
+\bibitem{HybAn}
+S.~Rus, J.~Hoeflinger, and L.~Rauchwerger.
+\newblock Hybrid analysis: Static \& dynamic memory reference analysis.
+\newblock {\em Int. Journal of Parallel Programming}, 31(3):251--283, 2003.
+
+\bibitem{VEG} 
+S.~Rus, D.~Zhang, and L.~Rauchwerger.
+\newblock {V}alue {E}volution {G}raph and its {U}se in {M}emory {R}eference
+  {A}nalysis.
+\newblock In {\em Int.~Par.~Arch.~Comp.~Tech. (PACT)}, pages 243--254, 2004.
+
+\bibitem{MonStmt}
+M.~Spezialetti and R.~Gupta.
+\newblock Loop {M}onotonic {S}tatements.
+\newblock {\em IEEE Trans. on Software Engineering}, 21(6):497--505, 1995.
+
+\bibitem{GatedSSA}
+P.~Tu and D.~Padua.
+\newblock Gated {SSA}-{B}ased {D}emand-{D}riven {S}ymbolic {A}nalysis for
+  {P}arallelizing {C}ompilers.
+\newblock In {\em Procs. Int. Conf. on Supercomputing}, pages 414--423, 1995.
+
+\bibitem{CohenBeyondMon}
+P.~Wu, A.~Cohen, and D.~Padua.
+\newblock Induction {V}ariable {A}nalysis {W}ithout {I}diom {R}ecognition:
+  {B}eyond {M}onotonicity.
+\newblock In {\em Int. Lang. Comp. Par. Comp. (LCPC)}, pages 427--441, 2001.
+
+\end{thebibliography}
+
+%\bibliography{CIVpaper}
 
 \end{document}
 
