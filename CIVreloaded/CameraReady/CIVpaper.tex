@@ -498,16 +498,16 @@ formulates the problem to be solved by {\sc civ} analysis.
 
 %\vspace{1ex}
 \begin{figure}[hbt]
-\hspace{-4ex}
+%\hspace{-2ex}
 \begin{tabular}{lclr}
-$USR$ & ::= &  $LMAD$                 & ($n$-dim strided intervals)\\
-      & {\tt~~}| & $USR \ \cup \ USR$ & (set union)\\
-      & {\tt~~}| & $USR \ \cap \ USR$ & (intersection)\\
-      & {\tt~~}| & $USR \ - \ USR$ & (difference)\\
-      & {\tt~~}| & $Exp^{bool} \ \# \ USR$ & (gated USR)\\
-      & {\tt~~}| & $_l\cup_{i=1}^{N} \ USR$ & (full recurrence)\\
-      & {\tt~~}| & $_l\cup_{k=1}^{i-1} \ USR$ & (partial recurrence)\\
-      & {\tt~~}| & $CallSite \ \bowtie \ USR$ & (callsite translation)
+$USR$ & {\tt::=} & $LMAD$            & (strided intervals)\\
+      & {\tt~~|} & $USR \ \cup \ USR$ & (set union)\\
+      & {\tt~~|} & $USR \ \cap \ USR$ & (intersection)\\
+      & {\tt~~|} & $USR \ - \ USR$ & (difference)\\
+      & {\tt~~|} & $Exp^{bool} \ \# \ USR$ & (gated USR)\\
+      & {\tt~~|} & $_l\cup_{i=1}^{N} \ USR$ & (full recurrence)\\
+      & {\tt~~|} & $_l\cup_{k=1}^{i-1} \ USR$ & (partial recurrence)\\
+      & {\tt~~|} & $CallSite \bowtie USR$ & (callsite translation)
 \end{tabular}
 \caption{Unified Set Reference (USR) Grammar.}
 \label{fig:USRgrammar}
