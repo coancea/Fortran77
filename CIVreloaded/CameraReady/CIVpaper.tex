@@ -825,10 +825,10 @@ over/under-estimating an {\sc usr} via
 {\em a union of gated-interval ${\tt g}\#L$ pairs}, where $L$ is an 
 interval and {\tt g} is a condition predicating $L$'s existence.  
 %
-We note however that it is always possible to build an interval 
+We note that it is always possible to build an interval 
 under/overestimate, by recursively pattern matching the {\sc usr}'s 
-shape~\cite{SummaryMonot}, and enhancing the algorithm to also gather 
-the gate information did not pose any significant challenges.
+shape~\cite{SummaryMonot}. We have enhanced this algorithm to also 
+gather gate information, and we have not encountered any significant problems.
   
 With the loop in Figure~\ref{fig:codeActforCorrec}(a), 
 the write-first underestimate $\lfloor WF_i\rfloor$ of array {\tt X} 
@@ -864,7 +864,7 @@ as the associated node if {\tt CIV}$_{d}$ dominates {\tt CIV}$_{pd}$,
 and {\tt CIV}$_{d}$ otherwise. This ensures that the associated {\sc civ}
 is the ``closest'' node that belongs to any path passing through {\tt PP$_L$}
 (the reverse does not hold).
-
+%
 For our running example, the $\lceil WF_i\rceil$ overestimate of {\tt X}, 
 namely {\tt [civ@2,civ@2+3*C(i)-1]}, is projected to node {\tt civ@3}, 
 as shown in the annotated {\sc veg} in Figure~\ref{fig:codeActforCorrec}(b).
@@ -1111,10 +1111,13 @@ to $\emptyset$.%Similarly $RW'_{i} = \emptyset$.
 When a {\sc civ} subscript is written on a {\tt 0}-evolution path,
 then cross-iteration dependencies are likely to occur because 
 the next writing iteration is likely to overwrite the same subscripts.
-This section demonstrates on loop {\tt EXTEND\_do400}
-a technique that can resolve mostly statically such dependencies.
+We will now present a technique to remove at compile time such dependencies.
+To make the presentation clearer we demonstrate it on loop {\tt EXTEND\_do400}
+(not shown).
+%This section demonstrates on loop {\tt EXTEND\_do400}
+%a technique that can resolve mostly statically such dependencies.
 %
-Assume we have per-iteration and partial-recurrence {\sc wf} 
+Assume the loop has per-iteration and partial-recurrence {\sc wf} 
 sets of shape:\vspace{1ex}\\
 \noindent$\lceil WF_i\rceil${\tt=[civ@1,civ@8~~]},
 $\lceil\cup_{k=1}^{i-1}WF_{k} \rceil${\tt=[civ,civ@1]},\\
@@ -1134,21 +1137,20 @@ implementation exploits. The key observations are:
             do not result in cross dependencies:
         $\lfloor WF_{i}\rfloor\mbox{~}\cap\mbox{~}\cup_{k=1}^{i-1}\lfloor WF_{k}\rfloor~=~\emptyset$.
 
-    \item All remaining indices, 
-        $\lceil WF_{i}\rceil - \lfloor WF_{i}\rfloor = {\tt\{civ@8\}}$,
-        are overwritten by the next {\sc civ}-increasing iteration:
-        {\tt{}civ@8>civ@1} $\Rightarrow$
-        {\tt\{civ@1\}} $\subseteq\lfloor WF_{i}\rfloor${\tt=[civ@1,civ@8-1]}
-        %
-        where {\tt\{civ@8\}} of the previous iteration was rewritten as 
-        {\tt\{civ@1\}} of the next {\sc civ}-increasing iteration.
+    \item All remaining indices, are overwritten by the next 
+            {\sc civ}-increasing iteration named {\tt j}: 
+        $\lceil WF_{i}\rceil - \lfloor WF_{i}\rfloor \subseteq \lfloor WF_{j} \rfloor$. %= {\tt\{civ@8\}}
+        In our case we have $\lceil WF_{i}\rceil - \lfloor WF_{i}\rfloor${\tt=\{civ@8\}},
+        and rewriting {\tt civ@8$_i$} of iteration {\tt i} as {\tt civ@1$_j$}, i.e.,
+        the $\mu$ node of the next increasing iteration {\tt j}, leads to the
+        satisfied equation {\tt \{civ@1$_j\}\subseteq \lfloor WF_{j}\rfloor$=[civ@1$_j$,civ@8$_j$-1]}. 
 
     \item Last iteration increases the {\sc civ} value; this 
         holds for {\tt EXTEND\_do400} because {\sc civ} is 
         updated in an inner loop.
 \end{itemize}
 
-If all properties hold, then the output-dependency pattern is resolved 
+If all properties hold, then the output dependence is removed 
 by privatizing the array (updates) and by copying out, at 
 iteration's end, the indices belonging to the $\lfloor WF_i\rfloor$ 
 {\em underestimate}, i.e., {\tt[civ@1,civ@8-1]}.
@@ -1156,28 +1158,26 @@ The last iteration copies in and out the overestimate (or updates directly),
 and because it increases {\sc civ}, it is guaranteed to overwrite the 
 uncommitted part of previous (non-increasing) iterations.
 %
-The last property requires runtime verification, during the {\sc civ}-value
-(pre)computation, while the first two are derived statically for the current 
+The last property is verified during the {\sc civ}-value
+(pre)computation. The first two are derived statically for the current 
 loop, but in general, they may also use runtime verification.
 
-%\vspace{1ex}
-%{\bf 4. Privatizable Stack.} Our analysis also extends (with
-%some modifications) to a stack-like access pattern in which
-%the {\sc civ} values are only piecewise monotonic.
-%This is discusses in Appendix~\ref{sec:Stack} in the
-%context of loop {\tt ACCEL\_do10} from {\tt tree} benchmark
-%that exhibits a privatizable stack. 
-
-\enlargethispage{\baselineskip}
 
 % : Beyond Monotonicity 
 \subsection{Privatizing Stack-Like Accesses} 
 \label{sec:Stack}
 
-While we have studied so far the case when the {\sc civ} evolution
-throughout a loop is monotonic, this section investigates a stack-like 
-access pattern that can still be solved in a similar fashion, by 
-studying monotonicity piecewise.
+Stack like reference pattern is an important operation on arrays,
+and represent a non-monotonic evolution of the top of the stack 
+{\sc civ} index. 
+We will model such a reference pattern as a sequence of monotonic
+evolutions, and reduce the problem to the one discussed in previous 
+sections.
+
+%While we have studied so far the case when the {\sc civ} evolutions
+%throughout a loop is monotonic, this section investigates a stack-like 
+%access pattern that can still be solved in a similar fashion, by 
+%studying monotonicity piecewise.
  
 For example, the code in Figure~\ref{fig:Tree}(a) is a simplified
 version of loop {\tt ACCEL\_do10} from {\tt tree} benchmark. 
@@ -1187,24 +1187,27 @@ compute a result {\tt res}:
 The {\tt while} loop is exited when the stack is empty, and each
 iteration pops one element and, later on, pushes
 up-to-eight new elements from/to the stack. 
-
+%
 The goal is to prove that the stack {\tt X} is privatizable in the
-context of the outer loop.   The plan is to devise an analysis
-capable of overestimating the {\em disjoint intervals} of the
-{\tt while}-loop-aggregated (i) {\em read set}, i.e., 
-{\sc r}$=${\sc ro}$~\cup~${\sc rw}, and (ii) {\em write-first set}. 
-In our case, this would result in  
-$\lceil${\sc r}$\rceil=${\tt[0,civ-1]}, and
-$\lceil${\sc wf}$\rceil=${\tt[civ,SS]}, where {\tt SS} denotes
-the stack size and  {\tt civ} is the value before entering the 
-{\tt while} loop, i.e., $1$.  
+context of the outer loop.   
 
-One can now observe that the read set of the {\tt while} loop 
-is included in the {\sc wf} set of the region just before the 
-{\tt while} loop, i.e., {\tt \{0\} $\subseteq$ \{0\}}, due to the 
-first update to {\tt X(civ)}. It follows that the read set of
-each iteration of the outer loop is the empty set, 
-hence {\tt X} can be safely privatized. 
+The plan is to devise an analysis capable of verifying that the
+aggregated {\em read} and {\em write-first} sets at the {\tt while}-loop 
+level start from a cut-off point determined by the first iteration %of the {\tt while} loop 
+and expand monotonically, but in opposite directions, such that 
+they do not overlap. In our case, the read set should be
+$\lceil${\sc r}$\rceil${\tt=}$\lceil${\sc ro}$\rceil$$\cup$$\lceil${\sc rw}$\rceil${\tt=[0,civ-1]}
+and the write-first set should be $\lceil${\sc wf}$\rceil${\tt=[civ,SS]},
+where {\tt SS} denotes the stack size and  {\tt civ=1} is the value 
+before entering the {\tt while} loop.
+
+One can now check whether the read set of the {\tt while} loop 
+is included in the {\sc wf} set of the region just before the
+{\tt while} loop. In our case this reduces to checking 
+{\tt \{0\} $\subseteq$ \{0\}} because {\tt X(1)} is written 
+before the {\tt while} loop.   If this inequality holds then 
+the read set of each iteration of the outer loop is the empty 
+set, and {\tt X} can be safely privatized. 
 
 
 \begin{figure}
@@ -1259,8 +1262,8 @@ With our example, {\sc wf}$_k=${\tt (q.GT.5)\#[civ@2,civ@9-1]}
 is associated with {\sc veg} node {\tt civ@9}, and 
 {\sc r}$_k=${\tt \{civ@2-1\}}, as before, with {\tt civ@3}, 
 where $k$ denotes an arbitrary iteration of the {\tt while} loop.
-The split point is {\tt SP=civ=1}, since {\tt civ@2} equals {\tt civ} 
-for the first iteration.
+The split point is {\tt SP=civ=1}, since, for the first iteration, 
+{\tt civ@2} has the value at {\tt while}'s entry. 
 
 {\em The second step} is to attempt a semantics-preserving {\sc veg} transformation
 such that (i) each {\sc civ}-decreasing/increasing path holds only intervals 
@@ -1324,7 +1327,7 @@ predicate of the loop in Figure~\ref{fig:codeActforCorrec}(a),
 ${\tt N} \le {\tt Q}~\vee~{\tt civ@5} < {\tt M}$,
 depends on {\tt civ@5}, and resolving statically the output 
 dependencies of {\tt EXTEND\_do400}, depends, as
-per Section~\ref{subsec:Track}, on establishing whether the last
+shown in Section~\ref{subsec:Track}, on establishing whether the last
 iteration has increased the {\sc civ} value. 
 %
 {\em Third}, {\sc civ} values may flow in the computation
@@ -1438,16 +1441,19 @@ that exhibit the special pattern of output dependencies, we adopt a strategy sim
 to the one used for {\sc civ} computation: arrays such as {\tt X} are privatized,
 their read-set {\sc ro}$_i$ $\cup$ {\sc rw}$_i$ is copied in, and the per-iteration 
 {\sc wf} underestimate
-is copied-out at the iteration's end.   Our technique is deeply integrated with the
-underlying compiler framework: On the one hand, $\mathcal{F}$ uses the {\sc civ}-summarized
-over and underestimates to derive sufficient-independence predicates.
-%
-On the other hand $\mathcal{F}$ is used in the summarization process, for example 
-to simplify the {\sc ro}/{\sc rw} per-iteration sets, and thus to optimize the 
-size of the data that needs to be copied in.  Similarly, Fourier-Motzkin-like
-elimination reduces both loop indices and {\sc civ}s, i.e., when {\sc civ}'s 
-bounds are derivable from its {\sc veg}.
+is copied-out at the iteration's end.   Our technique is well integrated in the
+underlying compiler framework: predicates derived from equations on memory-reference 
+sets are used in the computation of {\sc civ} summaries, and vice-versa.
 
+%On the one hand, $\mathcal{F}$ uses the 
+%{\sc civ}-summarized over and underestimates to derive sufficient-independence 
+%predicates.
+%%
+%On the other hand $\mathcal{F}$ is used in the summarization process, for example 
+%to simplify the {\sc ro}/{\sc rw} per-iteration sets, and thus to optimize the 
+%size of the data that needs to be copied in.  Similarly, Fourier-Motzkin-like
+%elimination reduces both loop indices and {\sc civ}s, i.e., when {\sc civ}'s 
+%bounds are derivable from its {\sc veg}.
 
 
 \section{Experimental Evaluation}
@@ -1593,17 +1599,23 @@ Overall, for track we obtain a speedup of (only) $2.5$x on eight cores.
 The less-than-optimal runtime for {\tt bdna}, {\tt nasa7}, and 
 {\tt tree} was already explained, i.e., significant time spent in {\sc io},
 small data sets. However, their loops show better results,
-e.g., {\tt ACCEL\_do10} shows a  $7.1$x speedup on eight cores. % healthy
+e.g., {\tt ACCEL\_do10} shows a  $7.1$x speedup on eight cores.
 
-The loop-level scalability results of Figure~\ref{fig:ParRuntime}(c) 
-hint that memory bandwidth is the main limitation. 
-%
-To check this hypothesis we run {\tt track}, the most complex benchmark in our suite, 
-on a bandwidth-friendlier system: an eight dual-core {\tt POWER 5+@1.9GHz} with $32$GB memory. 
-The results, depicted in Figure~\ref{fig:ParRuntime}(d) show 
+We have also tried to run scalability tests on a different 
+architecture; an eight dual-core {\tt POWER 5+@1.9GHz} with 
+$32$GB memory. The obtained results, depicted  in Figure~\ref{fig:ParRuntime}(d) show 
 significantly-improved scalability up to sixteen cores for the 
-total runtime. 
-The {\sc civ}-computation overheads, also depicted, scale equally well.  
+total runtime. The {\sc civ}-computation overheads, also depicted, scale equally well.  
+
+%The loop-level scalability results of Figure~\ref{fig:ParRuntime}(c) 
+%hint that memory bandwidth is the main limitation. 
+%%
+%To check this hypothesis we run {\tt track}, the most complex benchmark in our suite, 
+%on a bandwidth-friendlier system: an eight dual-core {\tt POWER 5+@1.9GHz} with $32$GB memory. 
+%The results, depicted in Figure~\ref{fig:ParRuntime}(d) show 
+%significantly-improved scalability up to sixteen cores for the 
+%total runtime. 
+%The {\sc civ}-computation overheads, also depicted, scale equally well.  
  
 In summary, on eight processors we report an average benchmark-level
 speedup of $4.33\times$, and an average {\sc civ}-loop speedup of $5.12\times$. 
@@ -1695,7 +1707,7 @@ or (ii) to be tuned in a manner that resolves a specific pattern
 of dependencies, e.g., {\sc track}.
 
 Finally, the value-evolution graph has been applied in the context of 
-autoparallelization~\cite{VEG}.   The high-level difference is that there, 
+auto-parallelization~\cite{VEG}.   The difference is that there, 
 subscripts are separated early into {\sc civ}-based and affine and they 
 do not mix: they are summarized under different representations, 
 and disambiguated via specialized dependency tests.
@@ -1721,22 +1733,22 @@ affine and {\sc civ}-based subscripts under the same
 representation. 
 %
 The result summaries are {\sc civ} agnostic and can be used for 
-various  purposes, e.g., dependence analysis or array {\sc ssa}. 
+various  purposes, e.g., dependence analysis or array {\sc ssa}~\cite{arraySSA}. 
 %
 Our analysis seems less conservative than related approaches 
-in that the algebra of under/over-estimates can exploit partial 
-programming idioms, such as vectors in which elements are mostly 
-pushed but some are overwritten. 
-
+in that the algebra of under/over-estimates can exploit 
+reference patterns that are similar, but do not fit exactly 
+known programming idioms, such as push-back operations on
+vectors. 
+%
 We have reported an automatic solution that is well integrated 
-in the repertoire of a compiler that combines static and dynamic 
-techniques to aggressively parallelize loops, and have 
-demonstrated the viability of the approach via a systematic
-evaluation of five real-world applications.
+in our compiler that combines static and dynamic 
+techniques to aggressively parallelize loops. We have 
+demonstrated the viability of the approach by evaluating
+it on five real-world applications.
 
    
 
-%\section*{Acknowledgement}  
 \acks 
    
 This work was supported in part by
@@ -1894,6 +1906,11 @@ L.~Rauchwerger and D.~Padua.
   {L}oops with {P}rivatization and {R}eduction {P}arallelization.
 \newblock {\em IEEE Trans. on Parallel and Distributed System}, 10(2):160--199,
   Feb 1999.
+
+\bibitem{arraySSA}
+S.~Rus, G.~He, C.~Alias, and L. Rauchwerger.
+\newblock Region Array SSA.
+\newblock {\em Int. Par. Arch. Comp. Tech. (PACT)}, pages 43--52, 2006.
 
 \bibitem{HybAn}
 S.~Rus, J.~Hoeflinger, and L.~Rauchwerger.
