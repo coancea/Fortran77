@@ -926,6 +926,7 @@ in which the only loop-variant terms are the $\mu$ and back {\sc civ} nodes,
 and analysis succeeds.
 
 \vspace{1ex}
+\enlargethispage{\baselineskip}
 
 {\bf 4. Merge Across All Paths.} 
 %
@@ -1112,13 +1113,15 @@ When a {\sc civ} subscript is written on a {\tt 0}-evolution path,
 then cross-iteration dependencies are likely to occur because 
 the next writing iteration is likely to overwrite the same subscripts.
 We will now present a technique to remove at compile time such dependencies.
-To make the presentation clearer we demonstrate it on loop {\tt EXTEND\_do400}
-(not shown).
+To make the presentation clearer we demonstrate it on the loop {\tt EXTEND\_do400},
+which contains the loop {\tt EXTEND\_do500}, whose {\sc veg} is shown 
+in Figure~\ref{fig:Track}.
+%
 %This section demonstrates on loop {\tt EXTEND\_do400}
 %a technique that can resolve mostly statically such dependencies.
-%
+%of shape
 Assume the loop has per-iteration and partial-recurrence {\sc wf} 
-sets of shape:\vspace{1ex}\\
+sets:\vspace{1ex}\\
 \noindent$\lceil WF_i\rceil${\tt=[civ@1,civ@8~~]},
 $\lceil\cup_{k=1}^{i-1}WF_{k} \rceil${\tt=[civ,civ@1]},\\
 \noindent$\lfloor WF_i\rfloor${\tt=[civ@1,civ@8-1]},
