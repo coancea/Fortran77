@@ -8,6 +8,7 @@ PDFLATEX        = pdflatex -halt-on-error
 	bibtex $*
 	$(PDFLATEX) $<
 	$(PDFLATEX) $<
+	rm -f *~ *.dvi *.ps *.log *.aux *.bbl *.blg  *.out
 
 clean:
 	rm -f *~ *.dvi *.ps *.log *.aux *.bbl *.blg  *.out $(PAPERPDF)

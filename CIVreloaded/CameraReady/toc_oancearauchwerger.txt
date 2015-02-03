@@ -1,0 +1,3 @@
+Scalable Conditional Induction Variables (CIV) Analysis,
+Cosmin Oancea, University of Copenhagen
+Lawrence Rauchwerger, Texas A&M University
