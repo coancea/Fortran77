@@ -1,0 +1,16 @@
+TITLE:
+Automatic Parallelization: A Middle Ground between Imperative and Functional Approaches.
+
+-------------------------------------------------------------
+-------------------------------------------------------------
+
+ABSTRACT:
+
+Proving and optimizing loop parallelism in an imperative setting typically relies on low-level (dependency) analysis of array subscripts. We present one such technique, (i) which combines  static extraction and runtime validation of sufficient conditions for parallelism, and (ii) that solves many of the difficult cases in which the soundness proof is sensitive to the input dataset. We demonstrate the effectiveness of the technique on a set of 30 (Fortran) SPEC and PerfectClub benchmarks.   
+
+While imperative solutions optimize efficiently the common case, they often require ``heroic efforts'' and do not guarantee that, for example, all existent parallelism is discovered and/or that parallel execution is (load) balanced.
+
+On the other hand, functional languages support nested parallelism (i) via a set of bulk operators exhibiting high-level invariants and implicit parallel semantics (ii) together with code transformations that offer work/depth asymptotic guarantees, e.g., flattening in NESL.   The downside is that the common case is not always efficiently supported.
+
+We investigate the possibility of a common ground between the two approaches that combines advantages: we demonstrate our proposed technique by manual application on three real-world financial applications parallelized on GPGPU, and report work in progress on the design of such a language and its optimizing compiler.
+
