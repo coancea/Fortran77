@@ -10,7 +10,7 @@ PDFLATEX        = pdflatex -halt-on-error
 	$(PDFLATEX) $<
 	$(PDFLATEX) $<
 	$(PDFLATEX) $<
-	rm -f *~ *.dvi *.ps *.log *.aux *.blg  *.out
+	rm -f *~ *.dvi *.ps *.log *.aux *.bbl *.blg  *.out
 
 clean:
 	rm -f *~ *.dvi *.ps *.log *.aux *.blg  *.out $(PAPERPDF)
