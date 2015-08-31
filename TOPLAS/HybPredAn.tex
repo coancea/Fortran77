@@ -402,9 +402,8 @@ such an extension example which has been well integrated in our framework.
 
 
 
-\subsection{Main Contributions}
+\subsection{Main Contributions of the Paper}
 
-The main contributions of this paper are:
 \begin{itemize}
 
     \item A compiler framework that integrates a language translation $\mathcal{F}$
@@ -429,6 +428,8 @@ The experimental evaluation demonstrates that:
           and $5.4$x on four and eight processors, respectively, which are superior
           to those obtained by {\sc intel}'s {\tt ifort} and {\sc ibm}'s {\tt xlf\_r} 
           commercial compilers.   
+
+\enlargethispage{\baselineskip}
 
 Compared with  results reported in the literature, the evaluation
 shows that (i) our novel  factorization scheme parallelized a number of previously
@@ -467,14 +468,10 @@ Section~\ref{subsec:IndUsr} presents the construction of the dependence
 summary $D$, which models loop independence as the satisfiability of 
 {\sc usr} equation $D = \emptyset$.
 %%
-Finally, Section~\ref{subsec:MotPred} motivates the approach taken in 
-this paper that, rather than evaluating $D$ at runtime, continues the
+Finally, Section~\ref{subsec:MotPred} motivates this paper's approach to
+not evaluate irreducible $D$s at runtime, but rather to continue the 
 static analysis by factoring out sufficient conditions of $D = \emptyset$ 
 as a predicate in the logical domain.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% I AM HERE!!!
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Unified Set Reference Language (USR)}
 \label{subsec:Usr}
@@ -487,142 +484,114 @@ $USR$ & {\tt::=} & $LMAD$            & (strided intervals)\\
       & {\tt~~|} & $USR \ \cap \ USR$ & (intersection)\\
       & {\tt~~|} & $USR \ - \ USR$ & (difference)\\
       & {\tt~~|} & $Exp^{bool} \ \# \ USR$ & (gated USR)\\
+      & {\tt~~|} & $CallSite \bowtie USR$ & (callsite translation)\\
       & {\tt~~|} & $_l\cup_{i=1}^{N} \ USR$ & (full recurrence)\\
-      & {\tt~~|} & $_l\cup_{k=1}^{i-1} \ USR$ & (partial recurrence)\\
-      & {\tt~~|} & $CallSite \bowtie USR$ & (callsite translation)
+      & {\tt~~|} & $_l\cup_{k=1}^{i-1} \ USR$ & (partial recurrence)
 \end{tabular}
 \caption{Unified Set Reference (USR) Grammar.}
 \label{fig:USRgrammar}
 \end{figure}
 
 Summaries use the representation shown in Figure~\ref{fig:USRgrammar},
-and can be seen as a {\sc dag} in which the leaves correspond,
-for simplicity, to strided (multi-dimensional) intervals, 
+and can be seen as a directed-acyclic graph ({\sc dag}) in which the 
+leaves correspond, for simplicity, to strided (multi-dimensional) intervals, 
 named linear memory access descriptors~\cite{LMAD} ({\sc lmad}) in the literature.
-{\sc usr}'s internal nodes represent operations whose results are not
-accurately representable in the {\sc lmad} domain: (i) irreducible set
-operations, such as union, intersection, subtraction ($\cup$, $\cap$, $-$), 
-or (ii) control flow: gates predicating summary existence (prefixed by $\#$) 
-or total ($_l\cup_{i=1}^N$) and partial ($_l\cup_{k=1}^{i-1}$) unions 
-corresponding to a normalized loop $l$ of index {\tt i=\{1$\ldots$N\}}. 
 %
-We note that while {\sc usr}s are complex and accurate,
-one can always under/over-estimate an {\sc usr} in the 
-simpler strided-interval domain, albeit this may 
+{\sc usr}'s internal nodes represent operations whose results cannot be
+expressed in the {\sc lmad} domain without loosing accuracy\footnote{
+Meaning that whenever the results of operations fall outside the {\sc lmad} 
+domain, we introduce symbolic nodes to accurately represent them, instead 
+of using conservative approximations.}: 
+%accurately representable in the {\sc lmad} domain, for example:
+\begin{itemize}
+    \item irreducible set operations, such as union, intersection, subtraction 
+            ($\cup$, $\cap$, $-$), or 
+    \item control flow: gates predicating summary's existence
+            (denoted by $\#$), call sites across which summaries cannot be
+            translated ($\bowtie$), or total ($_l\cup_{i=1}^N$) and 
+            partial ($_l\cup_{k=1}^{i-1}$) unions of references
+            that fail exact aggregation across a normalized loop $l$
+            of index {\tt i=\{1$\ldots$N\}}.
+\end{itemize}
+We note that {\sc usr} expressions may grow quite complex in order
+to preserve accuracy. However, if needed,
+one can always under/over estimate an {\sc usr} in the 
+simpler strided-interval ({\sc lmad}) domain, albeit this may 
 prove very conservative, i.e., $\emptyset$, or $[0,\infty]$. 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Summaries use a directed-acyclic-graph ({\sc dag}) representation,   
-named {\sc usr}, in which {\em leafs} are sets of 
-linear memory access descriptors~\cite{LMAD} ({\sc lmad}). 
+The rest of this section describes the {\sc lmad}s algebra of 
+aggregating index sets over quasi-affine patterns.
+For example, a sequence of array accesses of stride $\delta$ with 
+offset $\tau$ and bounded by (span) $\sigma$ can be described by the index 
+set $\{ \tau + i*\delta |\mbox{ } 0 \le i*\delta \le \sigma\}$. 
 %
-{\sc lmad}s define an algebra for aggregating index sets over quasi-affine
-patterns. For example a sequence of array accesses of stride $\delta$ with offset
-$\tau$ and bounded by (span) $\sigma$ leads to the index set 
-$\{ \tau + i*\delta |\mbox{ } 0 \le i*\delta \le \sigma\}$.
-In a straightforward generalization, an {\sc lmad} describes an arbitrary number 
-of such access sequences into an unidimensional (unified) set of indexes: 
+In general, {\sc lmad}s may describe an arbitrary number of such 
+access sequences into an unidimensional (unified) set of indices.
+Definition~\ref{lmadDEF} shows {\sc lmad}'s formal notation and 
+semantics, where strides $\delta_k$ and spans $\sigma_k$ model 
+virtual multi-dimensional array accesses:
 \begin{equation}\label{lmadDEF}
-\{ \tau + i_1*\delta_1 + ... + i_M*\delta_M \mbox{ }|\mbox{ } 0 
-\le i_k*\delta_k \le \sigma_k, k \in [1,M] \}
+[\delta_1,...,\delta_M] \vee [\sigma_1,...,\sigma_M] + \tau \ = \ \{ \tau + i_1*\delta_1 + ... + i_M*\delta_M \mbox{ }|\mbox{ } 0 
+\le i_k*\delta_k \le \sigma_k, k \in \{1\ldots M\} \}
 \end{equation}
-denoted by $[\delta_1,...,\delta_M] \vee [\sigma_1,...,\sigma_M] + \tau$,
-where strides $\delta_k$ and spans $\sigma_k$ model ``virtual'' 
-multi-dimensional accesses.
 
-For example, the {\sc wf} summaries for the write access to {\tt A} at each
-level of the loop nest below are presented on the right-hand side:  \vspace{0.15cm} \\ 
-\noindent$\mbox{ }\mbox{ }$ $L_o$ $\mbox{ }\mbox{ }$
-{\tt DO i = 1, N, 1}  
-$\mbox{ }\mbox{ }\mbox{ }$$\mbox{ }\mbox{ }$
-{\tt [k,N]$\vee$[k(M-1),N(N-1)] + k-1}
-%{\tiny $[k, N]\vee[k(M-1), N(N-1)] + k-1$ }
-\\
-$\mbox{ }\mbox{ }$ $L_i$ $\mbox{ }\mbox{ }$
-$\mbox{ }\mbox{ }\mbox{ }$
-  {\tt DO j = 1, M, 1} 
-$\mbox{ }\mbox{ }\mbox{ }$$\mbox{ }\mbox{ }\mbox{ }$
-{\tt [k]$\vee$[k(M-1)] + (i-1)N+k-1} 
-\\
-$\mbox{ }\mbox{ }$ $St$ $\mbox{ }\mbox{ }$
-$\mbox{ }\mbox{ }\mbox{ }$$\mbox{ }\mbox{ }\mbox{ }$
-    {\tt A[i*N+j*k] = ... } 
-$\mbox{ }\mbox{ }\mbox{ }$$\mbox{ }\mbox{ }\mbox{ }\mbox{ }$
-{\tt []$\vee$[] + (i-1)*N+jk-1} 
-\\
-$\mbox{ }\mbox{ }\mbox{ }$ $\mbox{ }\mbox{ }\mbox{ }\mbox{ }\mbox{ }\mbox{ }\mbox{ }$
-{\tt ENDDO ENDDO} \vspace{0.15cm} \\
-\noindent 
-At statement $St$ the summary is a point; aggregating the accesses over loop $L_i$,
-creates an 1D-{\sc lmad} of stride $\delta_{L_i} = \tau_{j\leftarrow j+1} - \tau = {\tt k}$ and
-span $\sigma_{L_i} = \tau_{j\leftarrow M} - \tau_{j \leftarrow 1} = {\tt k(M-1)}$, etc.
-Note that an {\sc lmad} is transparent to the dimensionality of its corresponding array,
-and it does not guarantee that its dimensions do not overlap; this can be 
-verified~\cite{HoeflingerDepTest} via $\sum_{j=1}^{k-1}\sigma_j < \delta_k$
-(i.e., {\tt N>k(M-1)} in our example).
-
-We found {\sc lmad}s  well  suited for our representation because: 
-(i) they support transparent array reshaping at call sites, as they are 
-      by definition a set of unidimensional points, and
-(ii) they provide better symbolic support, e.g., symbolic (constant) strides, 
-      are not affine constraints in Presburger arithmetic. 
-
-\begin{figure}[t]
-\begin{minipage}{0.5\columnwidth}
-\includegraphics[scale=0.16]{Figures/SOLVH_DO20_FIGS/NEW/USR_HE_FIND_SOLVH}\\
-(a)
-\end{minipage}
-\begin{minipage}{0.5\columnwidth}
-\includegraphics[scale=0.115]{Figures/SOLVH_DO20_FIGS/NEW/USR_HE_OIND_SOLVH}\\
-(b)
-
-\includegraphics[scale=0.115]{Figures/SOLVH_DO20_FIGS/NEW/USR_XE_FIND_SOLVH}\\
-(c)
-\end{minipage}
-\hrule
-\caption{Flow/Output Independence USRs for {\tt HE}, {\tt XE} in Figure~\ref{fig:SolvhDO20Code}.
-Corresponding {\sc f/o-ind} Predicates are: (c)~{\tt SYM.NE.1$\wedge$NS$\leq$16*NP},
-(a)~{\tt 8*NP<NS+6}, 
-(b)~$\wedge_{i=1}^{N-1}${\tt NS$\leq$32*(IB(i+1)-IA(i)-IB(i)+1)}.
-Dotted line points to the subtracted part; dotted $\cup_{i=1}^{i-1}$ 
-denotes partial recurrence under a fresh variable that ranges from $1$ to $i-1$.}
-\label{fig:SOLVH20USR}
+\begin{figure}[bt]
+$L_o \ \ ${\tt DO i = 1, N, 1}  
+$\ \ \ \ \ \ \ \ \ \ \ ${\tt [k,N]$\vee$[k(M-1),N(N-1)] + k-1}\\
+$L_i \ \ $
+$\ ${\tt DO j = 1, M, 1} 
+$\ \ \ \ \ \ \ \ \ \ \ \ ${\tt [k]$\vee$[k(M-1)] + (i-1)N+k-1} \\
+$St \ \ $
+$\ \ \ \ ${\tt A[i*N+j*k] = ... } 
+$\ \ \ \ \ \ \ \ \ \ \ \ \ ${\tt []$\vee$[] + (i-1)*N+jk-1}\\
+$\mbox{ } \ \ \ \ \ \ ${\tt ENDDO ENDDO}
+\caption{{\sc lmad} Aggregation Example}
+\label{fig:EgLMADaggreg}
 \end{figure}
 
+For example, Figure~\ref{fig:EgLMADaggreg} shows a loop nest containing a write
+access to array {\tt A} together with {\tt A}'s summaries at every program point:
+%
+At statement $St$ the summary is the point {\tt $\tau=$(i-1)*N+jk-1}.
+Aggregating the accesses over loop $L_i$ creates a one-dimensional 
+{\sc lmad} of stride $\delta_{L_i} = \tau_{j\leftarrow j+1} - \tau = {\tt k}$ and
+span $\sigma_{L_i} = \tau_{j\leftarrow M} - \tau_{j \leftarrow 1} = {\tt k(M-1)}$.
+Similarly, aggregating accesses across the outermost loop results in the
+two-dimensional {\sc lmad}. 
 
-{\sc usr}'s {\em internal nodes} represent operations that cannot be accurately 
-expressed in the {\sc lmad} domain: (i) irreducible set operations, 
-such as union, intersection, subtraction ($\cup$, $\cap$, $-$), 
-or (ii) control flow: gates predicating summary's existence, 
-call sites across which summaries cannot be translated, 
-or total ($\cup_{i=1}^{N}$) and partial ($\cup_{k=1}^{i-1}$) recurrences %/loops
-that fail exact aggregation.
-%loops that fail exact aggregation. %in the {\sc lmad} domain.
-%
-For example, with the {\sc usr} in Figure~\ref{fig:XE_FIND}, the set subtraction
-between {\sc lmad}s $[1]\vee[{\tt NS}-1]+0$ and  $[1]\vee[16*{\tt NP}-1]+0$
-cannot be represented in the symbolic {\sc lmad} domain, hence a subtraction
-{\sc usr} node ($-$) was introduced. 
-%
-Moreover, the resulting (subtraction) set
-is part of the result {\it iff} gate ${\tt SYM .NE.} 1$ holds, etc.
-We note that resorting to conservative approximation 
-%(to keep the result inside the {\sc lmad} domain) 
-instead of introducing the subtraction node, would {\em miss} the 
-condition under which the loop is provably {\em independent}. 
-%
-Similar arguments can be made for the {\sc usr}s in 
-Figures~\ref{fig:HE_FIND}~and~\ref{fig:XE_FIND}.
-%e.g., conservative approximation of the bottom subtraction node of
-%array {\tt HE}'s {\sc find-usr} would miss the relevant 
-%independence condition.
+Note however, that the {\sc lmad} is transparent to the dimensionality of 
+its corresponding array, and, its dimensions may in general overlap.
+With our example, the {\sc lmad} {\tt [k,N]$\vee$[k(M-1),N(N-1)]+k-1}
+has independent dimensions if {\tt N > k(M-1)}, i.e., the stride of the
+second dimension is smaller than the span of the first. 
+Equation~\ref{lmadNoOverlapDims} presents the generalized form of the 
+test~\cite{HoeflingerDepTest} for disproving dimension overlaps:
+%The latter can be disproved by~\cite{HoeflingerDepTest} test, shown below,
+%which in our case corresponds to non-overlapped 
+\begin{equation}\label{lmadNoOverlapDims}
+\sum_{p=1}^{k-1}\sigma_p < \delta_k, \forall k\in \{1\ldots M\}
+\end{equation}
+%\noindent{}which, in our example corresponds to {\tt N > k(M-1)}.
+
+The rationale for choosing {\sc lmad}s as the array abstraction in our representation 
+are twofolds: 
+(i)  they support transparent array reshaping at call sites, as they are 
+       by definition a set of unidimensional points, and
+(ii) they provide better symbolic support, e.g., symbolic (constant) strides
+       are not affine constraints in Presburger arithmetic. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 
 
 \subsection{Data-Flow Equations for USR Construction Demonstrated on A Running Example}
 \label{subsec:EqUsr}
+
+I AM HERE (I leave intro for the very last. Abstract is what we discussed at CS.)
 
 \subsection{Loop Independence Equations}
 \label{subsec:IndUsr}
