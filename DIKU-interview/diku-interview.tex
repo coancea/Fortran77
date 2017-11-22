@@ -107,7 +107,8 @@
 %%%%%%%%%%%%%%%%%%%%
 
 %Non-Heroic AutoPar
-\title[]{Imperative {\em vs.} Functional Approaches\\ to Optimising Parallelism}
+\title[]{A Quick Study of Data Parallelism in\\
+        Imperative {\em vs.} Functional Languages}
 
 %C.~Oancea
 \author[]{Cosmin E. Oancea\\{\tt cosmin.oancea@diku.dk}}
@@ -133,19 +134,18 @@
   \frametitle{Imperative Approaches}
 
 \begin{itemize}
-    \item \emphh{Perspective:}\\
-        the easiest and highest-impact way is to 
-        automatically parallelize sequential code 
-        written in mainstream languages (C++/Java);
+    \item \emphh{Perspective:}
+        automatic parallelization of loop-based sequential code 
+        in mainstream languages $\Rightarrow$ highest impact
     \bigskip 
 
     \item \emphh{Restrictive or Heroic Analysis:}
         \begin{itemize}
-            \item low-level data-dependency analysis
-                    (of array indices inside loops); 
             \item assumes (morally) Fortran77 code;            
             \item fights the language (aliasing, 
                     indirect accesses, control flow);
+            \item low-level data-dependency analysis
+                    (of array indices inside loops); 
             \item reverse engineers user's sequential
                     optimizations.
             %\item reverse engineers user's sequential optimizations
@@ -555,6 +555,134 @@ T~Henriksen, M.~Elsman, F.~Henglein, and C.~E.~Oancea. ``Futhark: purely functio
     \includegraphics[width=1\linewidth]{Figures/speedup0.pdf}\\\vspace{-1ex}
     \includegraphics[width=1\linewidth]{Figures/speedup1.pdf}
   \end{center}
+
+\end{frame}
+
+\section{Current and Future Research}
+
+\begin{frame}
+  \begin{center}
+    \Huge
+    Current and\\
+    Future Research
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile,t]
+   \frametitle{Current Status of Futhark}
+
+\blue{Academic Perspective:}\smallskip
+\begin{itemize}
+    \item been playing catch-up with academic competitors\\ 
+            with rather limited resources (1 PhD, couple of MSc)\smallskip
+        \begin{itemize}
+            \item reached ``state of the art'' level (TACO'17, PLDI'17, ICFP'18?),
+            \item relatively mature framework, suitable for building on top of it,
+            \item new research directions (later); focus on code transformations.
+        \end{itemize}\smallskip
+    \item solid foundation \& vehicle for conducting research in system's area.
+\end{itemize}
+\bigskip
+
+\blue{Funding Perspective:} languages/compilers subsidized. Selling points:\smallskip
+\begin{itemize}
+    \item natural expression of algorithms + modularity + composibility; \smallskip
+    \item generate efficient code for capricious modern hardware (GPUs); \smallskip
+    \item integration with mainstream productivity environments;\smallskip
+    \item one of the main outcomes of HIPERFIT project.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile,t]
+   \frametitle{Strategy}
+
+\blue{Languages/compilers are subsidized everywhere ... What to do?}
+\bigskip
+
+\emphh{Invest(ed) a lot of effort on getting Futhark used:}\smallskip
+\begin{itemize}
+    \item ongoing collaborations: SimCorp,~LexiFi,~3Shape,~BK~Medical,~ESS,~Dyalog
+    \begin{itemize}
+        \item industrial PhD with SimCorp (Cosmin + Martin)
+        \item hope for an industrial post-doc with SimCorp \& LexiFi\smallskip
+    \end{itemize}
+    \item some collaboration with The Image group; potential for more\smallskip
+    \item Futhark used in two MSc courses + several MSc thesis.
+\end{itemize}
+\bigskip
+
+\emphh{Build potential for collaboration with academic partners:}
+\begin{itemize}
+    \item invited talks, conference participation, students internships;
+    \item visibility: PC work (vice-chair IPDPS'18, co-chair FHPC'17, PACT, PPoPP, ISC);
+    \item collaborative frameworks; gather support for research agenda
+\end{itemize} 
+
+\end{frame}
+
+
+\begin{frame}[fragile,t]
+   \frametitle{Several Future Research Directions}
+
+\blue{Ultimate goal: tough to beat the compiler by 
+    programming assembly.}
+
+\begin{itemize}
+    \item \emphh{Dataset-Sensitive Compilation (DSC)}
+        \begin{itemize}
+            \item intuition: outer parallelism typically more profitable
+            \item incremental utilization of parallelism (top-down)
+            \item multi-versioned code discriminated by
+                    statically inferred predicates,
+                    whose threshold values are autotuned +
+                    %to hardware specifics +
+            \item reordering optimisations by inspector-executor
+                    techniques;
+        \end{itemize}\medskip\pause
+
+    \item \emphh{Statically-Inferred Memory Management (MEM):}
+        %frees the programmer from worrying about memory management;
+        %responsibility shifted to compiler:
+        \begin{itemize}
+                    \item build on region-based memory management for
+                            introducing a notion of memory into a
+                            memory-agnostic program +
+                    \item lift the semantics of register allocation
+                            and coalescing to operate on arrays,
+                            rather than scalars.
+        \end{itemize}\medskip\pause
+
+    \item \emphh{Language Extensions:}
+        \begin{itemize}
+            \item support for other bulk datatypes, e.g.,
+                    multisets for SQL queries
+            \item support for expressing, reasoning and optimising
+                    (multi)linear functions,
+                    e.g., automatic differentiation
+        \end{itemize}
+    \medskip
+    \item \emphh{Transition towards ``real'' HPC (clusters of GPU/FPGA)}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile,t]
+   \frametitle{Several Future Research Directions (cont)}
+
+\begin{itemize}
+    \item ``FUTHARK: Functional Technology for High-performance Architectures'',
+    FTP18 grant proposal (Fritz, Martin, Ken, Cosmin).\bigskip
+
+    \item Strong support from industry and academic partners:\smallskip
+    \begin{itemize}
+        \item industry: SimCorp, LexiFi, 3Shape, Dyalog, BK Medical, NVIDIA, MSR, LLNL\smallskip
+        \item academy:  Kevin Hammond, Vinod Grover, Ranjid Jhala, Simon Peyton Jones, 
+                Gabriele Keller, Paul Kelly, Alan Mycroft, Jens Palsberg, Olga Pearce, 
+                Lawrence Rauchwerger, P. Sadayappan, Phil Trinder, and Dimitrios Vytiniotis.
+    \end{itemize}\bigskip
+
+    \item build consortium for EU projects, above + Albert Cohen, Mary Sheeran, Per Stenström.
+\end{itemize}
 
 \end{frame}
 
