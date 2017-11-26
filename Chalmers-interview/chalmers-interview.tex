@@ -657,13 +657,13 @@ If the source is a write and the sink a read then {\sc raw} dependency,\\If the 
 S1    A[j,i]=
        A[j,i]..
     ENDDO
-  ENDDO\pause
+  ENDDO
 For S1\mymath{\rightarrow}S1: 
  (j1,i1)=(j2,i2) 
  i1\emp{=}i2 \& j1\emp{=}j2
 
 Direction matrix:
-S1\mymath{\rightarrow}S1: \emp{[=,=]}
+S1\mymath{\rightarrow}S1: \emp{[=,=]}\pause
 \end{colorcode}
 \column{0.4\textwidth}
 \begin{colorcode}
@@ -672,13 +672,13 @@ S1\mymath{\rightarrow}S1: \emp{[=,=]}
 S1  A[j,i]=A[j-1,i]...
 S2  B[j,i]=B[j-1,i-1]...
    ENDDO
-  ENDDO\pause
+  ENDDO
 S1\mymath{\rightarrow}S1: (j1,i1)=(j2-1,i2)
         i1 \emp{=} i2 \& j1 \emp{<} j2
 S2\mymath{\rightarrow}S2: (j1,i1)=(j2-1,i2-1)
         i1 \emp{<} i2 \& j1 \emp{<} j2
 S1\mymath{\rightarrow}S1: \emp{[=,<]}
-S2\mymath{\rightarrow}S2: \emp{[<,<]}
+S2\mymath{\rightarrow}S2: \emp{[<,<]}\pause
 \end{colorcode}
 \column{0.23\textwidth}
 \begin{colorcode}
@@ -688,13 +688,13 @@ S1  A[i,j]=
      A[i-1,j+1]...
    ENDDO
   ENDDO
-For S1\mymath{\rightarrow}S1:\pause
+For S1\mymath{\rightarrow}S1:
  (i1,j1)=(i2-1,
           j2+1)
  i1\emp{<}i2 \& j1\emp{>}j2
 
 Direction matrix:
-S1\mymath{\rightarrow}S1: \emp{[<,>]}
+S1\mymath{\rightarrow}S1: \emp{[<,>]}\pause
 \end{colorcode}
 \end{columns}
 \end{block} 
@@ -839,51 +839,51 @@ After interchange, loop $j$ of the second loop nest is parallel.
 \end{frame}
 
 
-%\begin{frame}[fragile,t]
-%  \frametitle{Dependency Graph and Loop Distribution} 
-%
-%{\bf Def. Dependency Graph:} edges from the source of the dependency, i.e., early iteration, 
-%to the sink, i.e., later iteration. 
-%
-%\smallskip
-%
-%{\bf Th. Loop Distribution:} Statements that are in a dependence cycle remain in one 
-%(sequential) loop.   The others are distributed to separate loops in graph order; 
-%if no cycle then parallel loops.\smallskip
-%
-%\begin{block}{Vectorization Example: Remember Vector Machines?}
-%\begin{columns}
-%\column{0.34\textwidth}
-%\begin{colorcode}[fontsize=\scriptsize]
-%  DO i = 3, N
-%\emp{S1  A[i] = B[i-2] ...}
-%\alert{S2  B[i] = B[i-1] ...}
-%  ENDDO  
-%
-%For S2\mymath{\rightarrow}S1: i1 = i2-2, \emp{[<]}
-%For S2\mymath{\rightarrow}S2: i1 = i2-1, \emp{[<]}
-%\end{colorcode}
-%\column{0.27\textwidth}\pause
-%\includegraphics[height=12ex]{figures/LoopDistr}  
-%\column{0.30\textwidth}
-%\begin{colorcode}[fontsize=\scriptsize]
-%  \alert{DO} i = 3, N
-%S2  B[i] = B[i-1] ...
-%  \alert{ENDDO}%%%
-%
-%  \emphh{DOALL} i = 3, N
-%\emp{S1  A[i] = B[i-2] ...}
-%  \emphh{ENDDOALL}
-%\end{colorcode}
-%\end{columns}
-%\end{block}
-%
-%\medskip
-%
-%{\bf Corollary:} It is always legal to distribute a parallel loop;\\
-%\alert{but requires array expansion for local variables or if output
-%dependencies are present.}
-%\end{frame}
+\begin{frame}[fragile,t]
+  \frametitle{Dependency Graph and Loop Distribution} 
+
+{\bf Def. Dependency Graph:} edges from the source of the dependency, i.e., early iteration, 
+to the sink, i.e., later iteration. 
+
+\smallskip
+
+{\bf Th. Loop Distribution:} Statements that are in a dependence cycle remain in one 
+(sequential) loop.   The others are distributed to separate loops in graph order; 
+if no cycle then parallel loops.\smallskip
+
+\begin{block}{Vectorization Example: Remember Vector Machines?}
+\begin{columns}
+\column{0.34\textwidth}
+\begin{colorcode}[fontsize=\scriptsize]
+  DO i = 3, N
+\emp{S1  A[i] = B[i-2] ...}
+\alert{S2  B[i] = B[i-1] ...}
+  ENDDO  
+
+For S2\mymath{\rightarrow}S1: i1 = i2-2, \emp{[<]}
+For S2\mymath{\rightarrow}S2: i1 = i2-1, \emp{[<]}
+\end{colorcode}
+\column{0.27\textwidth}\pause
+\includegraphics[height=12ex]{figures/LoopDistr}  
+\column{0.30\textwidth}
+\begin{colorcode}[fontsize=\scriptsize]
+  \alert{DO} i = 3, N
+S2  B[i] = B[i-1] ...
+  \alert{ENDDO}
+
+  \emphh{DOALL} i = 3, N
+\emp{S1  A[i] = B[i-2] ...}
+  \emphh{ENDDOALL}
+\end{colorcode}
+\end{columns}
+\end{block}
+
+\medskip
+
+{\bf Corollary:} It is always legal to distribute a parallel loop;\\
+\alert{but requires array expansion for local variables or if output
+dependencies are present.}
+\end{frame}
 
 \begin{frame}[fragile,t]
   \frametitle{Applications of Data-Dependency Analysis}
